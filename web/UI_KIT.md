@@ -77,8 +77,8 @@ Charts use **Recharts** directly in dashboard panels (not shadcn chart wrapper).
 ## Copy rules
 
 - No em dashes in user-facing text.
-- Label substrate honestly: **Devnet live**, **Mainnet read-only**, **Mock preview**.
-- Never claim atomic Magic Actions settlement.
+- Label substrate honestly: **Devnet live**, **Mainnet read-only**, **offline samples**.
+- L1 settlement uses the two-step keeper path (live on devnet). Do not claim Magic Actions atomic settle-on-undelegate.
 
 ## Favicon
 

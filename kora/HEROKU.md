@@ -41,6 +41,10 @@ heroku logs --tail -a crossbar-kora-devnet
 
 ## Wire the frontend (Vercel env)
 
+Production dashboard: [https://projectcrossbar.vercel.app](https://projectcrossbar.vercel.app)
+
+Set on the `projectcrossbar` Vercel project (root directory `web`):
+
 ```
 VITE_KORA_RPC=https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com
 VITE_KORA_FEE_PAYER=3dJTjgEYn48DGKuv6hc5SBjF5XaSaQWbb22mWNbDSSHE

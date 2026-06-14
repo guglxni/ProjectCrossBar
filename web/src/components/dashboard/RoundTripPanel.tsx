@@ -117,7 +117,7 @@ export function RoundTripPanel({ onComplete }: Props) {
         <CardDescription>
           Run the full lifecycle with your wallet, live on devnet: fund →
           delegate → submit a crossing buy &amp; sell → clear at one price inside
-          the MagicBlock ER → undelegate → settle atomically to Solana L1.
+          the MagicBlock ER → undelegate → settle on Solana L1.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">

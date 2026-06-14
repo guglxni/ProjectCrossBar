@@ -21,7 +21,6 @@ export type DocsSectionId =
   | "instructions"
   | "oracle"
   | "devnet"
-  | "honesty"
   | "quickstart";
 
 export const DOCS_SECTIONS: { id: DocsSectionId; label: string }[] = [
@@ -33,7 +32,6 @@ export const DOCS_SECTIONS: { id: DocsSectionId; label: string }[] = [
   { id: "instructions", label: "Instructions" },
   { id: "oracle", label: "Oracle band" },
   { id: "devnet", label: "Devnet" },
-  { id: "honesty", label: "Honesty labels" },
   { id: "quickstart", label: "Quickstart" },
 ];
 
@@ -240,39 +238,6 @@ export const DIAGRAMS = [
   },
 ];
 
-export const HONESTY_ROWS = [
-  {
-    feature: "CrossBar program",
-    label: "Devnet live",
-    detail: "All order, clear, and settle paths target the deployed devnet program and MagicBlock ER.",
-    color: "accent" as const,
-  },
-  {
-    feature: "Flash Trade API",
-    label: "Mainnet read-only",
-    detail: "Price and pool reads hit flashapi.trade on mainnet. No CrossBar custody on Flash.",
-    color: "default" as const,
-  },
-  {
-    feature: "Hedge preview",
-    label: "Mock by default",
-    detail: "VITE_FLASH_MOCK=1 synthesizes hedge responses. Set to 0 for live API reads only.",
-    color: "warning" as const,
-  },
-  {
-    feature: "Kora gasless",
-    label: "Local relayer",
-    detail: "Requires a running Kora RPC (localhost). Not available on static Vercel hosting.",
-    color: "muted" as const,
-  },
-  {
-    feature: "Magic Actions settle",
-    label: "Not shipped",
-    detail: "Atomic settle-on-undelegate was reverted. Settlement is undelegate then settle on L1.",
-    color: "destructive" as const,
-  },
-];
-
 export const DEVNET_CONSTANTS = [
   { key: "Program ID", value: PROGRAM_ID.toBase58() },
   { key: "Delegation program", value: DELEGATION_PROGRAM.toBase58() },
@@ -325,7 +290,8 @@ export const ENV_VARS = [
   { name: "VITE_PROGRAM_ID", default: PROGRAM_ID.toBase58(), purpose: "CrossBar program" },
   { name: "VITE_VALIDATOR", default: VALIDATOR.toBase58(), purpose: "ER validator pubkey" },
   { name: "VITE_MARKET_PUBKEY", default: "(empty)", purpose: "Existing market PDA" },
-  { name: "VITE_KORA_RPC", default: "localhost", purpose: "Optional gasless relayer" },
-  { name: "VITE_FLASH_MOCK", default: "1", purpose: "Mock hedge preview" },
+  { name: "VITE_KORA_RPC", default: "https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com", purpose: "Kora gasless relayer (Heroku)" },
+  { name: "VITE_KORA_FEE_PAYER", default: "3dJTjgE…DSSHE", purpose: "Kora fee payer pubkey" },
+  { name: "VITE_FLASH_MOCK", default: "0 (hosted)", purpose: "1 = offline sample Flash data in dashboard" },
   { name: "VITE_FLASH_API_URL", default: "https://flashapi.trade", purpose: "Flash read-only API" },
 ];

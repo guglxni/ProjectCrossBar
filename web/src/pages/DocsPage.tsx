@@ -30,7 +30,6 @@ import {
   DIAGRAMS,
   DOCS_SECTIONS,
   ENV_VARS,
-  HONESTY_ROWS,
   INSTRUCTIONS,
   PDA_SEEDS,
   QUICKSTART_STEPS,
@@ -50,29 +49,6 @@ function planeBadge(plane: string) {
     return <Badge variant="outline">L1/ER</Badge>;
   }
   return <Badge variant="secondary">L1</Badge>;
-}
-
-function honestyBadge(color: (typeof HONESTY_ROWS)[number]["color"], label?: string) {
-  switch (color) {
-    case "accent":
-      return (
-        <Badge className="bg-[var(--accent)] text-white hover:bg-[var(--accent)]">
-          Devnet live
-        </Badge>
-      );
-    case "destructive":
-      return <Badge variant="destructive">Not shipped</Badge>;
-    case "warning":
-      return (
-        <Badge className="border-amber-200 bg-amber-50 text-amber-900 hover:bg-amber-50">
-          Mock default
-        </Badge>
-      );
-    case "muted":
-      return <Badge variant="outline">Local only</Badge>;
-    default:
-      return <Badge variant="outline">{label ?? "Read-only"}</Badge>;
-  }
 }
 
 export function DocsPage() {
@@ -119,8 +95,8 @@ export function DocsPage() {
           Everything behind the cross.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-          Protocol overview, architecture, on-chain instruction map, devnet
-          constants, and honesty labels for what is live, read-only, or mock.
+          Protocol overview, architecture, on-chain instruction map, and devnet
+          deployment constants.
         </p>
       </div>
 
@@ -204,10 +180,12 @@ export function DocsPage() {
             />
             <Alert>
               <AlertDescription className="text-sm">
-                Settlement is a deliberate two-step. The auction clears inside the
-                ER; SPL movement is a separate L1 step (undelegate_open_orders →
-                settle → finalize_settlement). Magic Actions atomic
-                settle-on-undelegate was reverted and is not shipped on devnet ER.
+                Settlement on L1 is a deliberate two-step: undelegate_open_orders,
+                then settle, then finalize_settlement. This path is live on devnet
+                (tests/er-demo.ts, tests/crank-demo.ts). Magic Actions
+                atomic settle-on-undelegate was attempted but the devnet ER does not
+                dispatch post-commit actions that mutate the same account being
+                undelegated, so CrossBar uses the standard MagicBlock pattern instead.
               </AlertDescription>
             </Alert>
             <DocsList
@@ -395,26 +373,6 @@ acceptable p* in [p_ref - half, p_ref + half]`}</DocsCodeBlock>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          </DocsSection>
-
-          <DocsSection id="honesty" title="Honesty labels">
-            <p>
-              The website and dashboard label substrate honestly. Nothing is
-              presented as mainnet live unless it is.
-            </p>
-            <div className="space-y-3">
-              {HONESTY_ROWS.map((row) => (
-                <Card key={row.feature}>
-                  <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="font-medium text-foreground">{row.feature}</p>
-                      <p className="mt-1 text-sm leading-relaxed">{row.detail}</p>
-                    </div>
-                    {honestyBadge(row.color, row.label)}
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </DocsSection>
 

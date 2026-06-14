@@ -178,7 +178,7 @@ export function OrderEntryPanel({ poll }: Props) {
             onClick={() => void submitOrder(true)}
             disabled={!connected || !kora.available}
           >
-            Gasless submit {kora.available ? "" : "(Kora offline)"}
+            Gasless submit {kora.available ? "(Kora online)" : "(set VITE_KORA_RPC)"}
           </Button>
         </div>
 

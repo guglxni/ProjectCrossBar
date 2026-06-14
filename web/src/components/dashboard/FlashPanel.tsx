@@ -67,14 +67,23 @@ export function FlashPanel({ poll }: Props) {
         <CardTitle className="text-base">Live market context</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert>
-          <AlertTitle>Reference prices via Flash Trade</AlertTitle>
-          <AlertDescription>
-            Live mainnet reference prices shown alongside CrossBar's on-chain
-            oracle band, so you can read every devnet clear against a familiar
-            market price.
-          </AlertDescription>
-        </Alert>
+        {FLASH_MOCK ? (
+          <Alert>
+            <AlertTitle>Offline sample data</AlertTitle>
+            <AlertDescription>
+              VITE_FLASH_MOCK=1: synthesized prices for local UI. Set to 0 for live
+              mainnet reference reads from Flash Trade (read-only, no custody).
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert>
+            <AlertTitle>Mainnet read-only</AlertTitle>
+            <AlertDescription>
+              Live reference prices from Flash Trade API. CrossBar clears on devnet;
+              Flash data is market context only.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {loading && (
           <p className="text-sm text-muted-foreground">Loading market data…</p>

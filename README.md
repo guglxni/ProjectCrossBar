@@ -5,7 +5,7 @@
 [![clearing tests](https://img.shields.io/badge/clearing%20tests-49%20passing-2ea043)](clearing/)
 [![certified parity](https://img.shields.io/badge/certified%20parity-4006%2F4006-2ea043)](tests/parity/)
 [![devnet](https://img.shields.io/badge/devnet-deployed%20%26%20live-7a3fb5)](#verification)
-[![live demo](https://img.shields.io/badge/demo-projectcrossbar.vercel.app-000000)](https://project-crossbar.vercel.app)
+[![live demo](https://img.shields.io/badge/demo-projectcrossbar.vercel.app-000000)](https://projectcrossbar.vercel.app)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Continuous order books on Solana leak value to whoever lands first in a slot. Project CrossBar removes intra-batch time priority: every order that arrives inside the same window clears at **one uniform price**, the matching runs **sub-slot inside an Ephemeral Rollup** so the protocol controls sequencing instead of the block leader, and the net result settles back to L1 in **one atomic step**.
@@ -131,7 +131,7 @@ solana program show CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd --url devnet
 
 ## Live demo
 
-**Web app:** [https://project-crossbar.vercel.app](https://project-crossbar.vercel.app)
+**Web app:** [https://projectcrossbar.vercel.app](https://projectcrossbar.vercel.app)
 
 Cinematic landing page + devnet trading dashboard (dual RPC, Flash reference prices, Kora gasless relay on [Heroku](https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com)). Connect a devnet wallet and open `/dashboard`.
 
@@ -161,7 +161,7 @@ npx tsx tests/crank-demo.ts                     # crank + settle keeper (live de
 
 # 5. Web dashboard (hero + live devnet panels)
 cd web && cp .env.example .env && npm install && npm run dev
-# Production: https://project-crossbar.vercel.app
+# Production: https://projectcrossbar.vercel.app
 ```
 
 See [`web/README.md`](web/README.md) and [`web/UI_KIT.md`](web/UI_KIT.md) for the React SPA, dual RPC wiring, and design tokens.

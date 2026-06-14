@@ -1,6 +1,6 @@
 # Project CrossBar Web App
 
-**Live:** [https://project-crossbar.vercel.app](https://project-crossbar.vercel.app)
+**Live:** [https://projectcrossbar.vercel.app](https://projectcrossbar.vercel.app)
 
 React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui single-page app: cinematic marketing hero and live devnet trading dashboard.
 

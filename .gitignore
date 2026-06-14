@@ -57,3 +57,7 @@ graphify-out/
 web/node_modules/
 web/dist/
 web/.env
+
+# HyperFrames product video (local render artifacts, not published)
+video/
+.vercel
