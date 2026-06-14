@@ -149,6 +149,8 @@ Generate fixtures three ways: hand-written edge cases, property-based random bat
 
 **Evidence:** `4006/4006` batches pass certified Layer-2 parity (`./tests/parity/run_parity.sh`).
 
+On devnet, the deployed program (`CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd`) is validated on the live MagicBlock ER via `tests/er-demo.ts` and `tests/crank-demo.ts`. See [`README.md`](README.md#devnet-deployment).
+
 ---
 
 ## 7. MEV-elimination argument

@@ -4,7 +4,7 @@
 
 | Version | Supported |
 | --- | --- |
-| `v0.1.x` (devnet) | Yes |
+| `v0.1.x` (devnet) | Yes — program `CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd`, slot `469362329` |
 
 Project CrossBar is in active development on Solana devnet. Do not use with real funds on mainnet until an explicit mainnet release is announced.
 

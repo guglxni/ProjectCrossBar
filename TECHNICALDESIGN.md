@@ -188,4 +188,21 @@ Accept $p^*$ iff $p^* \in \text{band}$ and feed age $\le$ `max_age`. Keep the re
 
 ## 8. Errors (`err.rs`)
 
-`BatchFull`, `WindowClosed`, `OutOfBand`, `StaleOracle`, `NotCrankAuthority`, `EmptyCross`, `VrfTimeout`. Each maps to a documented failure mode in `MATH.md` §7–8.
+`BatchFull`, `WindowClosed`, `OutOfBand`, `StaleOracle`, `NotCrankAuthority`, `EmptyCross`, `VrfTimeout`, `AlreadySettled`, `FillExceedsReserved`, `OracleDeviation`. Each maps to a documented failure mode in `MATH.md` §7–8.
+
+## 9. Devnet deployment
+
+Current live program (see [`README.md` § Devnet deployment](README.md#devnet-deployment) for full details):
+
+| Field | Value |
+| --- | --- |
+| Program ID | `CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd` |
+| Last deployed slot | `469362329` |
+| Program data size | `692,800` bytes |
+| Upgrade authority | `8qj2WUdrdByn29yMLPYTwtXQfXCVTt9K1n6Dt7EP9qJ` |
+| Programdata rent | `4.82` SOL |
+| ER endpoint | `https://devnet.magicblock.app` |
+
+**Validated on the live ER:** `tests/er-demo.ts`, `tests/crank-demo.ts` (includes settle keeper).
+
+**Local-validator only:** `tests/demo-devnet.ts` (scenarios A/B — clearing math and guards, no delegation path).

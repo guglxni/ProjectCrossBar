@@ -19,7 +19,7 @@ crossbar = "CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd"
 url = "https://api.apr.dev"
 
 [provider]
-# Target devnet per REQUIREMENTS.md section 5 (mainnet is out of scope).
+# Target devnet (mainnet out of scope for this release).
 cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 

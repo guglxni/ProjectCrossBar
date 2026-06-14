@@ -62,9 +62,9 @@ Order-fairness (Wendy/Libra) was analyzed and **deliberately not implemented**: 
 > finalize) — the same pattern every MagicBlock example uses (e.g. rock-paper-scissor's
 > `undelegate_all` → `claim_pot`). It runs end-to-end in one command
 > ([`tests/crank-demo.ts`](tests/crank-demo.ts)) and is validated on the devnet ER. (We
-> tried to fold settlement into an atomic post-commit Magic Action and the live ER
-> disproved it — see [`docs/integrations/MAGIC_ACTIONS.md`](docs/integrations/MAGIC_ACTIONS.md).
-> Gasless keeper settlement is one Kora paymaster away — UX polish, not a lifecycle change.)
+> tried to fold settlement into an atomic post-commit Magic Action; the live devnet ER
+> disproved same-account commit+action (action escrow never charged). Gasless keeper
+> settlement is one Kora paymaster away — UX polish, not a lifecycle change.)
 
 ---
 
@@ -79,18 +79,51 @@ The correctness definition is **parity with a machine-checked oracle**: the matc
 | Determinism under shuffle, ~30k books | `clearing/tests/invariants.rs` | **N1** |
 | Auction rule = verified volume/fills over 20k books | `clearing/tests/auction_price.rs` | — |
 | CFMM: parity preserved at zero reserves, k non-decreasing | `clearing/tests/cfmm.rs` | — |
-| Deployed + working on devnet | `solana program show CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd --url devnet` | T0.4 |
-| Scenario A (devnet): one price | `p*=100`, vol 200, 4 fills, `run_batch` 8212 CU | F5, N4 |
-| Scenario B (devnet): sandwich nets zero | attacker buy+sell at victim `p*=101`, 8829 CU | MEV (MATH §7) |
-| Full ER round-trip (devnet): clear *inside* ER | `tests/er-demo.ts` — `p*=100`, undelegate, settle | novelty |
+| Full ER round-trip (live MagicBlock ER) | `tests/er-demo.ts` — delegate → clear at `p*` → undelegate → settle | novelty |
+| Automatic crank + settle keeper (live ER) | `tests/crank-demo.ts` — ScheduleTask + L1 settle loop | — |
+| Scenario A: one uniform price | `tests/demo-devnet.ts` — `p*=100`, vol 200, 4 fills, ~8k CU | F5, N4 |
+| Scenario B: sandwich nets zero | `tests/demo-devnet.ts` — attacker brackets victim at same `p*` | MEV (MATH §7) |
 
-**Program:** `CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd` (devnet, built with platform-tools v1.53).
-**Deploy size:** `opt-level=z` + fat LTO + `strip` + `panic=abort` + `no-log-ix-name` →
-~610 KB (the practical floor; `token_2022` is macro-required and can't be dropped),
-`overflow-checks` kept on (C5). **Deploy fee:** the bigger lever is the programdata
-allocation — `solana program deploy` defaults to 2× headroom (≈8.49 SOL rent); the deploy
-script sizes it tightly with `--max-len` (≈4.25 SOL), **saving ~4.25 SOL (50%)** on a fresh
-deploy. `run_batch` ≈ 18–21k CU, far under the 1.4M cap (per-tx gas is negligible).
+### Devnet deployment
+
+| Field | Value |
+| --- | --- |
+| **Program ID** | [`CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd`](https://explorer.solana.com/address/CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd?cluster=devnet) |
+| **Cluster** | Solana devnet + MagicBlock ER (`https://devnet.magicblock.app`) |
+| **Last deployed slot** | `469362329` |
+| **Program data size** | `692,800` bytes (program account including upgrade buffer) |
+| **Upgrade authority** | `8qj2WUdrdByn29yMLPYTwtXQfXCVTt9K1n6Dt7EP9qJ` |
+| **Programdata rent** | `4.82` SOL locked in programdata account |
+| **Build toolchain** | Anchor 1.0.2, platform-tools **v1.53** (`cargo build-sbf --tools-version v1.53`) |
+
+Verify on-chain:
+
+```bash
+solana program show CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd --url devnet
+```
+
+**What this build contains:**
+
+- `delegate_open_orders` regression fix — removed `market_guard` after `delegate_market` (only reproducible on the real ER, not a local validator)
+- `settle_inner` shared helper; round 1/2/3 authorization and idempotency hardening active
+- Magic Actions settle-on-undelegate **reverted** (same-account commit+action not dispatched — confirmed on-chain)
+- `AlreadySettled`, `FillExceedsReserved`, `OracleDeviation` error codes wired
+- Release profile: `opt-level=z`, fat LTO, `strip`, `panic=abort`, `no-log-ix-name` (~150 KB smaller binary), **`overflow-checks=true`**
+
+`run_batch` ≈ 18–21k CU on devnet, far under the 1.4M cap.
+
+### What each demo validates
+
+| Demo | Substrate | Status |
+| --- | --- | --- |
+| [`tests/er-demo.ts`](tests/er-demo.ts) | Live devnet MagicBlock ER | **Passes** — full delegate → submit → clear → undelegate → settle |
+| [`tests/crank-demo.ts`](tests/crank-demo.ts) | Live devnet ER + L1 | **Passes** — ScheduleTask crank, then settle keeper (polls L1, settles each trader, finalizes) |
+| [`tests/demo-devnet.ts`](tests/demo-devnet.ts) | Local validator (no ER) | **Passes** — scenarios A/B: clearing math, oracle band, post-audit guards |
+
+> **Honest gap:** `demo-devnet.ts` exercises the on-chain clearing path on a **local
+> validator** — it does not delegate to the real ER. ER-specific delegation, crank, and
+> settlement are covered by `er-demo.ts` and `crank-demo.ts`, both validated against
+> `https://devnet.magicblock.app`.
 
 ---
 
@@ -110,9 +143,10 @@ cargo check -p crossbar                   # type-checks against real APIs
 # 4. Devnet demos (Node 26 breaks mocha → run standalone with tsx)
 export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
 export ANCHOR_WALLET=~/.config/solana/id.json
-THROTTLE_MS=900 npx tsx tests/demo-devnet.ts   # scenarios A + B + CU
-npx tsx tests/er-demo.ts                        # full ER round-trip
-npx tsx tests/crank-demo.ts                     # automatic crank
+export EPHEMERAL_PROVIDER_ENDPOINT=https://devnet.magicblock.app/
+THROTTLE_MS=900 npx tsx tests/demo-devnet.ts   # scenarios A + B (local validator)
+npx tsx tests/er-demo.ts                        # full ER round-trip (live devnet ER)
+npx tsx tests/crank-demo.ts                     # crank + settle keeper (live devnet ER)
 ```
 
 > **Toolchain note.** Build the program with platform-tools **v1.53**. v1.51 is too old for the `edition2024` dep tree; v1.54 builds but faults at runtime on Anchor account deserialize. `cargo clean` deletes the program keypair in `target/deploy/` — restore it from `keys/`.
