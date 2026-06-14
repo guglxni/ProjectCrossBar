@@ -23,25 +23,27 @@ export async function getMarketChart(
   }
 }
 
-/** 24h % change keyed by symbol: Pyth first, CoinGecko fallback. */
+/**
+ * 24h % change keyed by symbol.
+ * Prefer one CoinGecko batch (single request); fall back to sequential Pyth.
+ */
 export async function getTicker24hChanges(
   coins: CoinMeta[],
   signal?: AbortSignal,
 ): Promise<Record<string, number>> {
   try {
-    const pyth = await getPythTickerChanges(
-      coins.map((c) => c.symbol),
-      signal,
-    );
-    if (Object.keys(pyth).length >= Math.ceil(coins.length / 2)) return pyth;
+    const rows = await getTickerPrices(coins, signal);
+    const out: Record<string, number> = {};
+    for (const r of rows) {
+      if (r.change24h != null) out[r.symbol] = r.change24h;
+    }
+    if (Object.keys(out).length >= Math.ceil(coins.length / 2)) return out;
   } catch {
     /* fall through */
   }
 
-  const rows = await getTickerPrices(coins, signal);
-  const out: Record<string, number> = {};
-  for (const r of rows) {
-    if (r.change24h != null) out[r.symbol] = r.change24h;
-  }
-  return out;
+  return getPythTickerChanges(
+    coins.map((c) => c.symbol),
+    signal,
+  );
 }

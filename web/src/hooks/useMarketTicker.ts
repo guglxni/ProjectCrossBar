@@ -67,6 +67,7 @@ export function useMarketTicker(): MarketTickerState {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
+
     async function load() {
       try {
         const change = await getTicker24hChanges(TICKER_COINS, controller.signal);
@@ -90,11 +91,17 @@ export function useMarketTicker(): MarketTickerState {
         }
       }
     }
-    load();
-    const id = setInterval(load, 120_000);
+
+    // Let the selected-coin chart fetch first (avoids burst 429 on cold load).
+    const boot = setTimeout(() => {
+      if (!cancelled) load();
+    }, 2_000);
+
+    const id = setInterval(load, 300_000);
     return () => {
       cancelled = true;
       controller.abort();
+      clearTimeout(boot);
       clearInterval(id);
     };
   }, []);

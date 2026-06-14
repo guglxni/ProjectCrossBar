@@ -20,6 +20,24 @@ interface CacheEntry<T> {
 const cache = new Map<string, CacheEntry<unknown>>();
 const inflight = new Map<string, Promise<unknown>>();
 
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const id = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(id);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true },
+    );
+  });
+}
+
 async function cgFetch<T>(path: string, signal?: AbortSignal, ttlMs = 90_000): Promise<T> {
   const key = path;
   const hit = cache.get(key) as CacheEntry<T> | undefined;
@@ -34,6 +52,22 @@ async function cgFetch<T>(path: string, signal?: AbortSignal, ttlMs = 90_000): P
       headers: { accept: "application/json" },
     });
     if (res.status === 429 && hit) return hit.data;
+    if (res.status === 429) {
+      await sleep(1500, signal);
+      const retry = await fetch(`${BASE}${path}`, {
+        signal,
+        headers: { accept: "application/json" },
+      });
+      if (retry.status === 429 && hit) return hit.data;
+      if (!retry.ok) throw new Error(`CoinGecko ${retry.status}`);
+      const ct2 = retry.headers.get("content-type") ?? "";
+      if (!ct2.includes("application/json")) {
+        throw new Error("CoinGecko: non-JSON response");
+      }
+      const data = (await retry.json()) as T;
+      cache.set(key, { data, expiry: Date.now() + ttlMs });
+      return data;
+    }
     if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
     const ct = res.headers.get("content-type") ?? "";
     if (!ct.includes("application/json")) {
@@ -101,7 +135,7 @@ export async function getTickerPrices(
 ): Promise<TickerEntry[]> {
   const ids = coins.map((c) => c.id).join(",");
   const path = `/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
-  const data = await cgFetch<SimplePriceResponse>(path, signal, 120_000);
+  const data = await cgFetch<SimplePriceResponse>(path, signal, 300_000);
   return coins
     .map((c) => {
       const row = data[c.id];
