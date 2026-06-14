@@ -13,6 +13,8 @@
 [![live demo](https://img.shields.io/badge/demo-projectcrossbar.vercel.app-000000)](https://projectcrossbar.vercel.app)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
+*Research-backed clearing:* uniform-price batch auctions with Nasdaq call-auction pricing ([arXiv:1407.4512](https://arxiv.org/abs/1407.4512)), VRF-randomized window close ([arXiv:2405.09764](https://arxiv.org/abs/2405.09764)), and CFMM-augmented liquidity ([arXiv:2210.04929](https://arxiv.org/abs/2210.04929)) — matcher checked against a verified Coq oracle ([arXiv:2104.08437](https://arxiv.org/abs/2104.08437)). Citations and proofs in [`MATH.md`](MATH.md).
+
 Continuous order books on Solana leak value to whoever lands first in a slot. Project CrossBar removes intra-batch time priority: every order that arrives inside the same window clears at **one uniform price**, the matching runs **sub-slot inside an Ephemeral Rollup** so the protocol controls sequencing instead of the block leader, and the net result settles back to L1 in **one atomic step**.
 
 > **Name.** A *crossbar switch* is a matrix fabric that connects any input to any output in a single pass — exactly what a matching engine does crossing N buyers against N sellers. In market microstructure, *the cross* is the auction print itself: the single uniform price at which aggregated supply and demand meet (the opening/closing cross).
