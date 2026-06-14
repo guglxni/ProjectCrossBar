@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="architecture" id="arch">
+    <mxGraphModel dx="1100" dy="760" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1120" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Project CrossBar — Two-Plane Architecture" style="text;html=1;align=center;fontSize=20;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="300" y="16" width="520" height="30" as="geometry"/></mxCell>
+        <mxCell id="subtitle" value="Frequent batch auction: matching + uniform-price clearing run INSIDE a MagicBlock Ephemeral Rollup, settle atomically to Solana L1" style="text;html=1;align=center;fontSize=11;fontColor=#555;" vertex="1" parent="1"><mxGeometry x="180" y="44" width="760" height="20" as="geometry"/></mxCell>
+
+        <!-- Base plane -->
+        <mxCell id="base" value="Solana L1  —  base plane (canonical custody &amp; settlement)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;verticalAlign=top;fontStyle=1;fontSize=13;fontColor=#1a3a6b;" vertex="1" parent="1"><mxGeometry x="60" y="90" width="430" height="470" as="geometry"/></mxCell>
+        <mxCell id="prog" value="crossbar program  (Anchor, #[ephemeral])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4a6fa5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="85" y="130" width="380" height="34" as="geometry"/></mxCell>
+        <mxCell id="market" value="Market PDA&#10;(config, status, window, CFMM reserves)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="85" y="178" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="book" value="BatchBook PDA&#10;(zero-copy order slab)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="285" y="178" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="result" value="BatchResult PDA&#10;(p*, fills — clearing readout)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="85" y="240" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="oracle" value="OraclePrice PDA&#10;(Pyth Lazer reference)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="285" y="240" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="oo" value="OpenOrders PDA (per trader)&#10;claimable / reserved ledger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="85" y="302" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="vault" value="Vault PDAs (base / quote)&#10;SPL token custody" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="285" y="302" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="l1ix" value="L1 instructions:  init_market · deposit / withdraw · settle (Magic Actions) · force_undelegate" style="whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="85" y="372" width="380" height="40" as="geometry"/></mxCell>
+        <mxCell id="kora" value="Kora paymaster (gasless submit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38761d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="85" y="422" width="180" height="34" as="geometry"/></mxCell>
+        <mxCell id="settle" value="Atomic settlement: fills + refunds" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38746d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="285" y="422" width="180" height="34" as="geometry"/></mxCell>
+        <mxCell id="cert" value="Correctness oracle: certified parity vs Coq-extracted verified matcher (vendor/dsam UM) — 4006/4006" style="whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#b3261e;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="85" y="470" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="cert2" value="off-chain harness" style="text;html=1;align=center;fontSize=9;fontColor=#b3261e;" vertex="1" parent="1"><mxGeometry x="85" y="518" width="380" height="16" as="geometry"/></mxCell>
+
+        <!-- Ephemeral plane -->
+        <mxCell id="er" value="MagicBlock Ephemeral Rollup  —  ephemeral plane (sub-slot execution)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8fd;strokeColor=#7a3fb5;verticalAlign=top;fontStyle=1;fontSize=13;fontColor=#4a1a7b;" vertex="1" parent="1"><mxGeometry x="630" y="90" width="430" height="470" as="geometry"/></mxCell>
+        <mxCell id="deleg" value="Delegated set (owned by the delegation program):&#10;Market · BatchBook · BatchResult · OraclePrice · OpenOrders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7a3fb5;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="655" y="130" width="380" height="50" as="geometry"/></mxCell>
+        <mxCell id="submit" value="submit_order (ER)&#10;append to forming window, reserve escrow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="655" y="194" width="380" height="40" as="geometry"/></mxCell>
+        <mxCell id="crank" value="crank heartbeat (ScheduleTask) → run_batch every tick" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="655" y="246" width="380" height="34" as="geometry"/></mxCell>
+        <mxCell id="engine" value="Clearing engine (pure, deterministic, integer)&#10;curves → uniform p* (Nasdaq/Xetra rule) → pro-rata fills&#10;dual-flow · oracle band · VRF tie-break · CFMM backstop&#10;randomized clearing time (VRF-jittered window close)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="655" y="292" width="380" height="92" as="geometry"/></mxCell>
+        <mxCell id="n1" value="N1: run_batch is a PURE function of the batch set + reference price&#10;(no clock / slot / arrival-order reads → MEV-free within a window)" style="whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#b3261e;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="655" y="396" width="380" height="44" as="geometry"/></mxCell>
+
+        <!-- external inputs -->
+        <mxCell id="pyth" value="Pyth Lazer (50ms)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="655" y="470" width="120" height="60" as="geometry"/></mxCell>
+        <mxCell id="vrf" value="ephemeral-vrf" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f3e8fd;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="800" y="470" width="110" height="60" as="geometry"/></mxCell>
+        <mxCell id="lp" value="CFMM pool (x·y=k)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="930" y="470" width="105" height="60" as="geometry"/></mxCell>
+
+        <!-- arrows between planes -->
+        <mxCell id="a1" style="endArrow=block;html=1;strokeColor=#7a3fb5;strokeWidth=2;fontSize=10;fontColor=#4a1a7b;" edge="1" parent="1" source="base" target="er"><mxGeometry relative="1" as="geometry"><mxPoint x="495" y="200" as="sourcePoint"/><mxPoint x="625" y="200" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="a1l" value="delegate (L1→ER)" style="text;html=1;fontSize=10;fontColor=#4a1a7b;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="498" y="176" width="124" height="18" as="geometry"/></mxCell>
+        <mxCell id="a2" style="endArrow=block;html=1;strokeColor=#38763d;strokeWidth=2;exitX=0;exitY=0.7;entryX=1;entryY=0.7;" edge="1" parent="1" source="er" target="base"><mxGeometry relative="1" as="geometry"><mxPoint x="625" y="430" as="sourcePoint"/><mxPoint x="495" y="430" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="a2l" value="commit / undelegate (ER→L1)" style="text;html=1;fontSize=10;fontColor=#38763d;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="494" y="430" width="132" height="18" as="geometry"/></mxCell>
+        <mxCell id="pyl" style="endArrow=open;html=1;strokeColor=#4a6fa5;dashed=1;" edge="1" parent="1" source="pyth" target="engine"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vrl" style="endArrow=open;html=1;strokeColor=#7a3fb5;dashed=1;" edge="1" parent="1" source="vrf" target="engine"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="lpl" style="endArrow=open;html=1;strokeColor=#38763d;dashed=1;" edge="1" parent="1" source="lp" target="engine"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

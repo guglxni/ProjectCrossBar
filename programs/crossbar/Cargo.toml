@@ -1,0 +1,53 @@
+[package]
+name = "crossbar"
+version = "0.1.0"
+description = "Project CrossBar: frequent batch auction DEX clearing inside a MagicBlock Ephemeral Rollup"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "crossbar"
+
+[features]
+# `no-log-ix-name` drops the per-instruction `msg!("Instruction: <Name>")` log
+# the #[program] macro emits — it removes those strings + the log syscall from
+# every instruction, shrinking the .so (less deploy rent) and saving a few CU per
+# tx (less gas). Demos read account state, not these logs, so nothing breaks.
+default = ["no-log-ix-name"]
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+[dependencies]
+# Versions pinned to match the vendored MagicBlock examples (verified):
+#   vendor/magicblock-engine-examples/{anchor-counter,crank-counter}
+anchor-lang = { version = "1.0.2", features = ["init-if-needed"] }
+# Only the SPL token modules are used (vault token accounts + transfers). The
+# token-account constraints need token + token_2022 (which provides
+# token_interface); dropping the unused default features (metadata, dex,
+# associated_token, governance, ...) shrinks the program without losing any
+# feature.
+# `token_2022` is required by anchor-spl's `#[derive(Accounts)]` macro expansion
+# for the token-account constraints (it references `token_2022`/`token_interface`
+# paths even when only classic `TokenAccount` is used), so it cannot be dropped.
+anchor-spl = { version = "1.0.2", default-features = false, features = ["token", "token_2022"] }
+ephemeral-rollups-sdk = { version = "0.14.3", features = ["anchor"] }
+ephemeral-vrf-sdk = { version = "0.3.0", features = ["anchor"] }
+magicblock-magic-program-api = { version = "0.10.1", default-features = false }
+bincode = "^1.3"
+# Required directly: Anchor 1.0.2's `#[zero_copy]` macro emits `bytemuck::`
+# paths for the Pod/AnyBitPattern impls on BatchBook/BatchResult.
+bytemuck = "1"
+
+# The pure matcher. Built without std on-chain (no_std + alloc); it is the same
+# code the off-chain parity test exercises.
+crossbar-clearing = { path = "../../clearing", default-features = false }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

@@ -1,0 +1,46 @@
+# Kora paymaster config for Project CrossBar (gasless order submission).
+#
+# Kora (Solana Foundation relayer) sponsors the SOL fee for relayed
+# transactions so takers/makers can submit orders without holding SOL. This
+# fits the fair-access framing in prd.md: the unit of competition is price, not
+# who can afford priority fees or hold gas. CrossBar's `submit_order` does no
+# token CPI inside the ER (escrow is an internal claimable ledger; real SPL
+# moves happen at the L1 boundary in deposit/withdraw), so a relayed
+# submit_order is cheap and safe to sponsor.
+#
+# Validate:  kora --config kora/kora.toml config validate \
+#              --signers-config kora/signers.toml
+# Run:       set -a; source kora/.env; set +a
+#            kora --rpc-url https://api.devnet.solana.com --config kora/kora.toml \
+#              rpc start --signers-config kora/signers.toml
+
+[validation]
+# Cap the lamports Kora will spend sponsoring a single transaction.
+max_allowed_lamports = 1000000
+# A relayed CrossBar tx has the fee-payer + the trader signature.
+max_signatures = 2
+# Only these programs may appear in a sponsored transaction. CrossBar plus the
+# system, compute-budget, SPL token, and MagicBlock delegation programs it
+# composes with. (Constants from INTEGRATIONS.md section 11.)
+allowed_programs = [
+  "CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd", # Project CrossBar
+  "11111111111111111111111111111111",            # System
+  "ComputeBudget111111111111111111111111111111",  # Compute Budget
+  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",  # SPL Token
+  "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh", # MagicBlock delegation
+]
+# Tokens Kora will recognize. Empty: the relayer fully sponsors fees (see the
+# free price source below) rather than charging the trader in an SPL token.
+allowed_tokens = ["Abhv6VuJmqE7p6T6FHwviaWhVR7Dp3ppJoU72d7C6yip"]
+allowed_spl_paid_tokens = []
+disallowed_accounts = []
+price_source = "Mock"
+
+# Fully sponsored: the trader pays nothing, Kora eats the fee. For a production
+# market, switch to `type = "margin"` or `"fixed"` to charge fees in the quote
+# token (USDC), which is the natural fee asset for a DEX.
+[validation.price]
+type = "free"
+
+[kora]
+rate_limit = 100

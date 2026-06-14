@@ -1,0 +1,16 @@
+# Kora signer pool for Project CrossBar. One in-memory fee-payer signer whose
+# key is supplied via the SIGNER_1_PRIVATE_KEY env var (see kora/.env, which
+# points at kora/fee-payer.json - Kora accepts a keypair file path, a base58
+# string, or a u8 array). kora/ is gitignored: the key never lands in the repo.
+#
+# For production, add more signers (round_robin) or swap `type = "memory"` for
+# a Turnkey / Privy / Vault HSM signer; the SignerConfig supports those.
+
+[signer_pool]
+strategy = "round_robin"
+
+[[signers]]
+name = "crossbar_fee_payer"
+type = "memory"
+private_key_env = "SIGNER_1_PRIVATE_KEY"
+weight = 1

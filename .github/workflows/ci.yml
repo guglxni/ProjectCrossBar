@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  clearing:
+    name: Clearing engine tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clearing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: clearing
+      - name: Run test suites
+        run: cargo test --all-targets
+
+  fmt:
+    name: Rust formatting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clearing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check

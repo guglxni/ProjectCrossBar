@@ -1,0 +1,41 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="flash-integration" id="flash">
+    <mxGraphModel dx="1100" dy="760" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1120" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Flash Trade integration — two venues, one rollup" style="text;html=1;align=center;fontSize=18;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="300" y="14" width="520" height="28" as="geometry"/></mxCell>
+        <mxCell id="sub" value="Fair spot clearing (CrossBar) + leverage/hedging (Flash V2) compose on the SAME MagicBlock Ephemeral Rollup, sharing the Pyth Lazer reference" style="text;html=1;align=center;fontSize=11;fontColor=#555;" vertex="1" parent="1"><mxGeometry x="160" y="44" width="800" height="20" as="geometry"/></mxCell>
+
+        <!-- ER plane -->
+        <mxCell id="er" value="MagicBlock Ephemeral Rollup  —  shared execution substrate (~30–50 ms, protocol-controlled sequencing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8fd;strokeColor=#7a3fb5;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#4a1a7b;" vertex="1" parent="1"><mxGeometry x="80" y="86" width="960" height="250" as="geometry"/></mxCell>
+
+        <mxCell id="cb" value="Project CrossBar&#10;spot frequent batch auction&#10;clears at one uniform p* (N1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=8;" vertex="1" parent="1"><mxGeometry x="120" y="150" width="300" height="150" as="geometry"/></mxCell>
+        <mxCell id="cbn" value="LONG 3 SOL spot filled at p* = 148.52" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="140" y="210" width="260" height="34" as="geometry"/></mxCell>
+        <mxCell id="cbt" value="MEV-resistant fill (no time priority)" style="text;html=1;fontSize=9;fontColor=#4a1a7b;align=center;" vertex="1" parent="1"><mxGeometry x="140" y="250" width="260" height="16" as="geometry"/></mxCell>
+
+        <mxCell id="fl" value="Flash Trade V2&#10;pool-to-peer perpetual futures&#10;Pyth oracle + pool mark" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=8;" vertex="1" parent="1"><mxGeometry x="700" y="150" width="300" height="150" as="geometry"/></mxCell>
+        <mxCell id="fln" value="open SHORT perp to delta-hedge&#10;POST /transaction-builder/open-position" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38763d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="720" y="210" width="260" height="34" as="geometry"/></mxCell>
+        <mxCell id="flt" value="leverage + shorting (manages exposure)" style="text;html=1;fontSize=9;fontColor=#38763d;align=center;" vertex="1" parent="1"><mxGeometry x="720" y="250" width="260" height="16" as="geometry"/></mxCell>
+
+        <!-- trader/agent in the middle -->
+        <mxCell id="tr" value="trader / AI agent&#10;(one ER session)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#c9a227;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="480" y="180" width="160" height="56" as="geometry"/></mxCell>
+        <mxCell id="net" value="net delta ≈ 0&#10;basis locked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="500" y="252" width="120" height="40" as="geometry"/></mxCell>
+
+        <mxCell id="e1" value="spot fill" style="endArrow=block;html=1;strokeColor=#7a3fb5;fontSize=9;fontColor=#4a1a7b;" edge="1" parent="1" source="cb" target="tr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="hedge (SHORT)" style="endArrow=block;html=1;strokeColor=#38763d;fontSize=9;fontColor=#38763d;" edge="1" parent="1" source="tr" target="fl"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Pyth shared -->
+        <mxCell id="pyth" value="Pyth Lazer reference (shared)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="490" y="356" width="140" height="64" as="geometry"/></mxCell>
+        <mxCell id="py1" style="endArrow=open;html=1;strokeColor=#4a6fa5;dashed=1;" edge="1" parent="1" source="pyth" target="cb"><mxGeometry relative="1" as="geometry"><mxPoint x="300" y="356" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="py2" style="endArrow=open;html=1;strokeColor=#4a6fa5;dashed=1;" edge="1" parent="1" source="pyth" target="fl"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- L1 settle -->
+        <mxCell id="l1" value="Solana L1 — settlement (CrossBar atomic settle · Flash commits ~every 10 s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1"><mxGeometry x="80" y="440" width="960" height="44" as="geometry"/></mxCell>
+        <mxCell id="s1" style="endArrow=block;html=1;strokeColor=#4a6fa5;" edge="1" parent="1" source="er" target="l1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="impl" value="Implemented (Tiers 0–2): clients/flash/client.ts (typed REST), clients/flash-ref.ts (live price/band keeper), tests/hedge-demo.ts. Off-chain composition — never inside run_batch, so N1 holds. Flash leg mocked on devnet (mainnet-only); FLASH_LIVE=1 = real preview." style="whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;align=left;spacingLeft=8;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="80" y="500" width="960" height="50" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

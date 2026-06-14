@@ -1,0 +1,46 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="flash-features" id="flashfeat">
+    <mxGraphModel dx="1200" dy="800" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1180" pageHeight="680" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Comprehensive Flash Trade integration — full surface + build-on-Flash features" style="text;html=1;align=center;fontSize=17;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="180" y="12" width="820" height="26" as="geometry"/></mxCell>
+        <mxCell id="sub" value="Everything composes with CrossBar (devnet) — reads/previews/streams are real (public, no funds); execution is mocked or devnet-routed" style="text;html=1;align=center;fontSize=11;fontColor=#555;" vertex="1" parent="1"><mxGeometry x="180" y="40" width="820" height="18" as="geometry"/></mxCell>
+
+        <!-- Column 1: Flash surfaces -->
+        <mxCell id="c1" value="Flash Trade surfaces (live)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#1a5e2a;" vertex="1" parent="1"><mxGeometry x="40" y="74" width="300" height="320" as="geometry"/></mxCell>
+        <mxCell id="rest" value="REST API  (flashapi.trade)&#10;reads · previews · tx-builders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38763d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="260" height="44" as="geometry"/></mxCell>
+        <mxCell id="ws" value="WebSocket  (/owner/{owner}/ws)&#10;positions + orders snapshots" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38763d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="60" y="164" width="260" height="44" as="geometry"/></mxCell>
+        <mxCell id="mcp" value="MCP server  (flash-trade-mcp)&#10;30 tools for AI agents / Claude Code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38763d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="60" y="218" width="260" height="44" as="geometry"/></mxCell>
+        <mxCell id="pyth2" value="Pyth Lazer oracle (shared w/ CrossBar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="60" y="272" width="260" height="34" as="geometry"/></mxCell>
+        <mxCell id="pool" value="Pool-to-peer liquidity (LP pools, custodies)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38763d;fontSize=10;" vertex="1" parent="1"><mxGeometry x="60" y="312" width="260" height="34" as="geometry"/></mxCell>
+        <mxCell id="c1n" value="all public / read-only / no funds" style="text;html=1;fontSize=9;fontColor=#1a5e2a;align=center;" vertex="1" parent="1"><mxGeometry x="60" y="352" width="260" height="16" as="geometry"/></mxCell>
+
+        <!-- Column 2: integration layer -->
+        <mxCell id="c2" value="CrossBar integration layer (clients/flash/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8fd;strokeColor=#7a3fb5;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#4a1a7b;" vertex="1" parent="1"><mxGeometry x="380" y="74" width="300" height="320" as="geometry"/></mxCell>
+        <mxCell id="cl" value="FlashClient  client.ts&#10;35 typed methods (full surface)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="400" y="110" width="260" height="40" as="geometry"/></mxCell>
+        <mxCell id="st" value="FlashStream  stream.ts&#10;live positions/orders + reconnect" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="400" y="156" width="260" height="40" as="geometry"/></mxCell>
+        <mxCell id="mc" value=".mcp.json  (signing routed to devnet)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="400" y="202" width="260" height="32" as="geometry"/></mxCell>
+        <mxCell id="cbbox" value="Project CrossBar (devnet)&#10;spot batch auction · uniform p* · ER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=4;" vertex="1" parent="1"><mxGeometry x="400" y="244" width="260" height="56" as="geometry"/></mxCell>
+        <mxCell id="cbn2" value="real clear: tests/demo-devnet.ts · er-demo.ts" style="text;html=1;fontSize=9;fontColor=#4a1a7b;align=center;" vertex="1" parent="1"><mxGeometry x="400" y="300" width="260" height="14" as="geometry"/></mxCell>
+        <mxCell id="band" value="oracle band cross-check  flash-ref.ts (Tier 0)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="400" y="320" width="260" height="34" as="geometry"/></mxCell>
+
+        <!-- Column 3: build-on-Flash features -->
+        <mxCell id="c3" value="Build-on-Flash features (CrossBar × Flash)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7e6;strokeColor=#c9a227;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#7a5b00;" vertex="1" parent="1"><mxGeometry x="720" y="74" width="420" height="320" as="geometry"/></mxCell>
+        <mxCell id="f1" value="Trailing TP / stop-loss / limit orders   triggers.ts&#10;preview TP/SL → place → ratchet stop on price stream" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c9a227;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="740" y="110" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="f2" value="Copy trading   copytrade.ts&#10;mirror a leader (snapshot-diff + proportional) · follow the cross" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c9a227;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="740" y="162" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="f3" value="LP dashboard   lp-dashboard.ts&#10;AUM · utilization · weight skew · fee incentives (live)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="740" y="214" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="f4" value="Automated strategy   strategy.ts&#10;watch CrossBar clears → band-check → hedge + triggers, in a loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c9a227;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="740" y="266" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="f5" value="Spot→perp hedge   hedge-demo.ts  ·  AI agent via MCP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c9a227;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="740" y="318" width="380" height="34" as="geometry"/></mxCell>
+        <mxCell id="c3n" value="= MagicBlock's &quot;what you can build on Flash&quot; menu (+50% prize)" style="text;html=1;fontSize=9;fontColor=#7a5b00;align=center;fontStyle=2;" vertex="1" parent="1"><mxGeometry x="740" y="356" width="380" height="16" as="geometry"/></mxCell>
+
+        <!-- arrows -->
+        <mxCell id="a1" style="endArrow=block;html=1;strokeColor=#7a3fb5;strokeWidth=2;" edge="1" parent="1" source="c1" target="c2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a2" style="endArrow=block;html=1;strokeColor=#c9a227;strokeWidth=2;" edge="1" parent="1" source="c2" target="c3"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- devnet banner -->
+        <mxCell id="dev" value="DEVNET / NO REAL FUNDS: no wallet signing, no submit, no mainnet RPC anywhere. Reads/previews/streams = public HTTP/WS. Execution mocked (FLASH_LIVE=1 = real preview only, never submitted). MCP sign_and_send routed to devnet. FLASH_OFFLINE=1 = zero network. Nothing enters run_batch — N1 stays pure." style="whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=10;align=left;spacingLeft=10;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="40" y="410" width="1100" height="50" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

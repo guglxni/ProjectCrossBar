@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="per-privacy" id="per">
+    <mxGraphModel dx="1100" dy="760" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1120" pageHeight="620" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Private Ephemeral Rollup (PER) — batching hides order, the TEE hides amounts" style="text;html=1;align=center;fontSize=17;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="220" y="14" width="680" height="28" as="geometry"/></mxCell>
+        <mxCell id="sub" value="make_private binds a MagicBlock permission to the confidential clearing state; once delegated to a TEE validator only the member (crank authority) can read it" style="text;html=1;align=center;fontSize=11;fontColor=#555;" vertex="1" parent="1"><mxGeometry x="140" y="44" width="840" height="20" as="geometry"/></mxCell>
+
+        <!-- permission program -->
+        <mxCell id="perm" value="MagicBlock Permission program&#10;ACLseoP…XQnp1  (live on devnet + mainnet)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#b3261e;fontSize=10;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="360" y="80" width="400" height="44" as="geometry"/></mxCell>
+
+        <!-- public column -->
+        <mxCell id="pub" value="PUBLIC (like normal Solana)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#1a3a6b;" vertex="1" parent="1"><mxGeometry x="80" y="150" width="420" height="300" as="geometry"/></mxCell>
+        <mxCell id="mkt" value="Market PDA  (config, window, CFMM)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="110" y="190" width="360" height="34" as="geometry"/></mxCell>
+        <mxCell id="orc" value="OraclePrice PDA  (public Pyth reference)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="1"><mxGeometry x="110" y="232" width="360" height="34" as="geometry"/></mxCell>
+        <mxCell id="out" value="What an outside observer sees on L1:&#10;the cleared p* and the net fills — nothing about resting order sizes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4a6fa5;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="110" y="286" width="360" height="50" as="geometry"/></mxCell>
+        <mxCell id="batch" value="Batching removes time priority (N1):&#10;every order in a window clears at one p*,&#10;shuffle-invariant → no &quot;land first&quot; MEV edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#b3261e;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="110" y="350" width="360" height="64" as="geometry"/></mxCell>
+
+        <!-- private column -->
+        <mxCell id="priv" value="PRIVATE — sealed inside the TEE (Intel TDX)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8fd;strokeColor=#7a3fb5;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#4a1a7b;" vertex="1" parent="1"><mxGeometry x="620" y="150" width="420" height="300" as="geometry"/></mxCell>
+        <mxCell id="book" value="BatchBook PDA  + permission&#10;resting order SIZES (confidential)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="650" y="190" width="360" height="38" as="geometry"/></mxCell>
+        <mxCell id="res" value="BatchResult PDA  + permission&#10;per-order fills (confidential)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="650" y="234" width="360" height="38" as="geometry"/></mxCell>
+        <mxCell id="oo" value="OpenOrders PDA  + permission  (per-trader reserved ledger)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="650" y="278" width="360" height="34" as="geometry"/></mxCell>
+        <mxCell id="mem" value="member = crank authority (flags = read all + manage)&#10;auditor can be added read-only → opt-in compliance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7a3fb5;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="650" y="322" width="360" height="44" as="geometry"/></mxCell>
+        <mxCell id="tee" value="TEE validator + TEE RPC (https://devnet-tee.magicblock.app?token=…)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="650" y="376" width="360" height="38" as="geometry"/></mxCell>
+
+        <!-- make_private arrows -->
+        <mxCell id="mp1" value="make_private (CPI, signs as PDA)" style="endArrow=block;html=1;strokeColor=#b3261e;fontSize=9;fontColor=#b3261e;" edge="1" parent="1" source="perm" target="book"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- bottom captions -->
+        <mxCell id="impl" value="IMPLEMENTED + verified: make_private / make_open_orders_private (programs/crossbar/src/permission.rs) create these permissions against the LIVE program — proven by tests/private-demo.ts on a local validator cloning ACLseoP. CPI encoded from the official ephemeral-rollups-sdk acl module." style="whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;align=left;spacingLeft=8;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="80" y="462" width="960" height="46" as="geometry"/></mxCell>
+        <mxCell id="n1" value="N1 unaffected: the TEE changes WHO can read the book, not the determinism of run_batch. Roadmap: delegate to a TEE validator + the in-ER ephemeral permission (is_private) that toggles confidentiality." style="whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;align=left;spacingLeft=8;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="80" y="514" width="960" height="44" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

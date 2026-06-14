@@ -1,0 +1,53 @@
+/target
+**/target
+/vendor
+node_modules
+test-ledger
+.anchor
+dist
+*.zip
+.DS_Store
+
+# Parity layer-2 OCaml build artifacts
+tests/parity/certified.ml
+tests/parity/oracle
+tests/parity/*.cmi
+tests/parity/*.cmx
+tests/parity/*.o
+
+# Kora secrets only (config files ARE committed)
+kora/fee-payer.json
+kora/.env
+
+# Key material (never publish)
+keys/
+
+# ---------------------------------------------------------------------------
+# Internal development, planning, and agent tooling (not published)
+# ---------------------------------------------------------------------------
+AGENTS.md
+CLAUDE.md
+SKILL.md
+PLAN.md
+prd.md
+REQUIREMENTS.md
+STATUS.md
+PROPOSAL.md
+INTEGRATIONS.md
+architecture.md
+scratchpad.md
+
+# Internal audits, investigations, and research notes
+docs/SECURITY_AUDIT.md
+docs/N1_INVESTIGATION.md
+docs/integrations/MAGIC_ACTIONS.md
+docs/integrations/FLASH_TRADE_FEATURES.md
+
+# Agent skills, MCP config, and editor-local state
+.agents/
+.mcp.json
+skills-lock.json
+.cursor/
+.cursorindexingignore
+.specstory/
+graphify-out/

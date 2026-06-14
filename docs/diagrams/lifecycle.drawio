@@ -1,0 +1,36 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="lifecycle" id="life">
+    <mxGraphModel dx="900" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="760" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Market lifecycle: L1 → ER → L1 (verified end-to-end on devnet)" style="text;html=1;align=center;fontSize=16;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="120" y="14" width="520" height="26" as="geometry"/></mxCell>
+
+        <!-- plane legend -->
+        <mxCell id="lg1" value="L1 (base)" style="rounded=1;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="120" y="48" width="90" height="22" as="geometry"/></mxCell>
+        <mxCell id="lg2" value="ER (ephemeral)" style="rounded=1;html=1;fillColor=#f3e8fd;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="220" y="48" width="110" height="22" as="geometry"/></mxCell>
+
+        <mxCell id="s1" value="init_market  (L1)&#10;create Market · BatchBook · BatchResult · OraclePrice · Vaults" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="90" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s2" value="deposit  (L1)&#10;escrow base/quote into Vaults → OpenOrders claimable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="156" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s3" value="set_delegated + delegate  (L1 → ER)&#10;delegate Market · book · result · oracle · OpenOrders (C6)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="222" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s4" value="submit_order  (ER, gasless via Kora)&#10;append to forming window · reserve escrow · no token CPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="288" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s5" value="run_batch  (ER, fired by the crank every tick)&#10;window FORMING until the VRF-randomized close tick" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="200" y="354" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s5b" value="at close: clear at ONE uniform p* (+ CFMM backstop)&#10;write BatchResult · pro-rata + VRF tie-break at the margin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="200" y="412" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s6" value="commit / undelegate  (ER → L1)&#10;return canonical state (incl. the cleared BatchResult) to L1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="478" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s7" value="settle  (L1)&#10;reconcile each trader at p* (fills + refund) → claimable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="544" width="360" height="46" as="geometry"/></mxCell>
+        <mxCell id="s8" value="withdraw  (L1)&#10;real SPL transfer out of the Vault to the trader" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=11;" vertex="1" parent="1"><mxGeometry x="200" y="610" width="360" height="46" as="geometry"/></mxCell>
+
+        <mxCell id="e1" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s2" target="s3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s4" target="s5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s5" target="s5b"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s5b" target="s6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s6" target="s7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="s7" target="s8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- loop arrow: more orders / next window -->
+        <mxCell id="loop" value="next window" style="endArrow=block;html=1;strokeColor=#7a3fb5;dashed=1;rounded=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;fontSize=9;fontColor=#7a3fb5;" edge="1" parent="1" source="s5b" target="s4"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="435" as="sourcePoint"/><mxPoint x="150" y="311" as="targetPoint"/><Array as="points"><mxPoint x="170" y="435"/><mxPoint x="170" y="311"/></Array></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

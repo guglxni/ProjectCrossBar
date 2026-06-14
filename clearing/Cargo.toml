@@ -1,0 +1,30 @@
+# crossbar-clearing: the pure uniform-price batch-auction matcher.
+#
+# Zero dependencies on purpose. This crate is the determinism/MEV core
+# (MATH.md sections 2, 4, 5). It must compile both off-chain (host, for the
+# differential parity test against vendor/dsam) and on-chain (Solana BPF),
+# so it stays free of Solana types and of any external crate.
+#
+# Test command (AGENTS.md "unit tests, off-chain, fast"):
+#   cargo test -p crossbar-clearing
+[package]
+name = "crossbar-clearing"
+version = "0.1.0"
+edition = "2021"
+description = "Uniform-price frequent-batch-auction clearing engine for Project CrossBar"
+license = "MIT"
+
+[lib]
+name = "crossbar_clearing"
+
+# Own workspace so `cargo test -p crossbar-clearing` stays hermetic and never
+# pulls the on-chain program's heavy Anchor/Solana dependency tree.
+[workspace]
+
+[features]
+# `std` is on by default for host unit tests. The on-chain program builds it
+# with default-features = false so the matcher is no_std + alloc only.
+default = ["std"]
+std = []
+
+[dependencies]
