@@ -20,12 +20,19 @@ interface CacheEntry<T> {
 const cache = new Map<string, CacheEntry<unknown>>();
 const inflight = new Map<string, Promise<unknown>>();
 
+function historyCacheKey(symbol: string): string {
+  // Bucket by 5 minutes so marquee + panel share one fetch per symbol.
+  const bucket = Math.floor(Date.now() / 300_000);
+  return `${symbol}:${bucket}`;
+}
+
 async function pythFetch<T>(
+  cacheKey: string,
   path: string,
   signal?: AbortSignal,
   ttlMs = 120_000,
 ): Promise<T> {
-  const key = path;
+  const key = cacheKey;
   const hit = cache.get(key) as CacheEntry<T> | undefined;
   if (hit && hit.expiry > Date.now()) return hit.data;
 
@@ -104,6 +111,7 @@ export async function getPythChart(
     to: String(to),
   });
   const data = await pythFetch<TvHistoryResponse>(
+    historyCacheKey(symbol),
     `/history?${qs}`,
     signal,
     300_000,

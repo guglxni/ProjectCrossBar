@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,11 +55,11 @@ export function LiveMarketPanel() {
   // edge advances in real time on top of the Pyth intraday history. Reset
   // whenever the selected coin changes.
   const [liveTail, setLiveTail] = useState<PricePoint[]>([]);
-  const tailCoin = useRef(selected.id);
-  if (tailCoin.current !== selected.id) {
-    tailCoin.current = selected.id;
-    if (liveTail.length) setLiveTail([]);
-  }
+
+  useEffect(() => {
+    setLiveTail([]);
+  }, [selected.symbol]);
+
   useEffect(() => {
     if (!livePrice || livePrice <= 0) return;
     setLiveTail((prev) => {
@@ -148,7 +148,12 @@ export function LiveMarketPanel() {
               Live chart temporarily unavailable.
             </div>
           ) : (
-            <LivePriceChart data={points} up={up} />
+            <LivePriceChart
+              key={selected.symbol}
+              chartKey={selected.symbol}
+              data={points}
+              up={up}
+            />
           )}
         </div>
 

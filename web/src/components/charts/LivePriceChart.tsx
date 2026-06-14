@@ -11,6 +11,8 @@ interface Props {
   data: PricePoint[];
   /** true → green gradient (up on the day), false → red. */
   up: boolean;
+  /** Unique per asset so Recharts remounts and SVG defs do not collide. */
+  chartKey: string;
   className?: string;
 }
 
@@ -23,8 +25,9 @@ const config = {
  * (https://ui.shadcn.com/charts/area): smooth area, vertical-free grid,
  * gradient fill, time x-axis, USD y-axis. Color follows the day's direction.
  */
-export function LivePriceChart({ data, up, className }: Props) {
+export function LivePriceChart({ data, up, chartKey, className }: Props) {
   const stroke = up ? "var(--success)" : "var(--destructive)";
+  const fillId = `fillLivePrice-${chartKey}`;
   const points = data.map((p) => ({ t: p.t, price: p.price }));
 
   if (points.length === 0) {
@@ -39,7 +42,7 @@ export function LivePriceChart({ data, up, className }: Props) {
     <ChartContainer config={config} className={className ?? "h-[280px] w-full"}>
       <AreaChart data={points} margin={{ left: 4, right: 8, top: 8, bottom: 0 }}>
         <defs>
-          <linearGradient id="fillLivePrice" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={stroke} stopOpacity={0.3} />
             <stop offset="95%" stopColor={stroke} stopOpacity={0.02} />
           </linearGradient>
@@ -91,7 +94,7 @@ export function LivePriceChart({ data, up, className }: Props) {
           type="natural"
           stroke={stroke}
           strokeWidth={2}
-          fill="url(#fillLivePrice)"
+          fill={`url(#${fillId})`}
           dot={false}
           activeDot={{ r: 4 }}
         />

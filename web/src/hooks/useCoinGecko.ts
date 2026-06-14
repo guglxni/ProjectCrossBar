@@ -28,27 +28,27 @@ export function useMarketChart(
     let cancelled = false;
     const controller = new AbortController();
 
-    async function load() {
+    setState({ chart: null, live: false, loading: true, error: null });
+
+    async function load(isRefresh: boolean) {
       try {
         const chart = await getMarketChart(coin, controller.signal);
-        if (!cancelled) {
-          setState({ chart, live: true, loading: false, error: null });
-        }
+        if (cancelled) return;
+        setState({ chart, live: true, loading: false, error: null });
       } catch (e) {
-        if (!cancelled) {
-          setState((s) => ({
-            chart: s.chart,
-            live: s.live,
-            loading: false,
-            error: s.chart ? null : String(e),
-          }));
-        }
+        if (cancelled) return;
+        setState((s) => ({
+          // Never show another symbol's chart after a coin switch.
+          chart: isRefresh ? s.chart : null,
+          live: isRefresh ? s.live : false,
+          loading: false,
+          error: isRefresh && s.chart ? null : String(e),
+        }));
       }
     }
 
-    setState({ chart: null, live: false, loading: true, error: null });
-    load();
-    const id = setInterval(load, intervalMs);
+    load(false);
+    const id = setInterval(() => load(true), intervalMs);
     return () => {
       cancelled = true;
       controller.abort();
