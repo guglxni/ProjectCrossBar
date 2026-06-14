@@ -1,0 +1,3265 @@
+{
+  "address": "CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd",
+  "metadata": {
+    "name": "crossbar",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Project CrossBar: frequent batch auction DEX clearing inside a MagicBlock Ephemeral Rollup"
+  },
+  "instructions": [
+    {
+      "name": "cancel_order",
+      "docs": [
+        "F4: cancel, only while the order's window is still forming. Releases the",
+        "reserved escrow back to claimable once escrow is wired (M1)."
+      ],
+      "discriminator": [
+        95,
+        129,
+        237,
+        240,
+        8,
+        49,
+        223,
+        132
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.base_mint",
+                "account": "Market"
+              },
+              {
+                "kind": "account",
+                "path": "market.quote_mint",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch_book",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  110,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "order_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "commit",
+      "docs": [
+        "F9: checkpoint canonical state to L1 every `commit_every_ticks`. Stamps",
+        "the commit slot so `force_undelegate` can measure the stall timeout."
+      ],
+      "discriminator": [
+        223,
+        140,
+        142,
+        165,
+        229,
+        208,
+        156,
+        74
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Crank authority. `commit`/`undelegate_market` require this to equal",
+            "`market.crank_authority` (audit C2/H1); `force_undelegate` ignores it",
+            "(permissionless escape hatch) but still needs a signer present."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "batch_book",
+          "writable": true
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        },
+        {
+          "name": "oracle_price",
+          "writable": true
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "consume_marginal_vrf",
+      "docs": [
+        "VRF callback: assign the marginal remainder to a tied order chosen by the",
+        "verifiable randomness. Only `vrf_winner` (the remainder recipient) moves;",
+        "`p*`, matched volume, and all non-marginal fills are untouched."
+      ],
+      "discriminator": [
+        160,
+        221,
+        51,
+        84,
+        190,
+        25,
+        237,
+        80
+      ],
+      "accounts": [
+        {
+          "name": "vrf_program_identity",
+          "docs": [
+            "Enforces the callback is invoked by the VRF program via CPI."
+          ],
+          "signer": true,
+          "address": "9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw"
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "randomness",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "consume_window_vrf",
+      "docs": [
+        "VRF callback: set the forming window's close target to a value drawn",
+        "uniformly from `[window_min_ticks, window_max_ticks]`. Only the window",
+        "boundary moves; the matcher and `p*` are untouched (N1 preserved)."
+      ],
+      "discriminator": [
+        4,
+        116,
+        64,
+        28,
+        12,
+        32,
+        34,
+        69
+      ],
+      "accounts": [
+        {
+          "name": "vrf_program_identity",
+          "docs": [
+            "Enforces the callback is invoked by the VRF program via CPI."
+          ],
+          "signer": true,
+          "address": "9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw"
+        },
+        {
+          "name": "market",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "randomness",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "delegate_market",
+      "docs": [
+        "F2 / C6: delegate the PDAs `run_batch` writes into an ER session.",
+        "",
+        "This delegates the `BatchBook` (the account `run_batch` mutates each",
+        "tick) following the verified `anchor-counter` pattern. The full",
+        "delegation set required by C6 (\"Market + BatchBook + both Vaults,",
+        "together, before the first tick\") is completed alongside the SPL escrow",
+        "wiring in M1; the per-account ergonomics follow `/magicblock`",
+        "delegation.md. Status is set to `Delegated` once the set is delegated."
+      ],
+      "discriminator": [
+        223,
+        125,
+        110,
+        148,
+        99,
+        176,
+        143,
+        72
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Crank authority — must equal `market.crank_authority` (audit H2)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "base_mint"
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "buffer_market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                167,
+                76,
+                87,
+                12,
+                91,
+                147,
+                48,
+                214,
+                140,
+                251,
+                235,
+                81,
+                198,
+                228,
+                137,
+                120,
+                142,
+                60,
+                87,
+                161,
+                210,
+                41,
+                162,
+                157,
+                143,
+                187,
+                136,
+                69,
+                125,
+                115,
+                194,
+                172
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "buffer_book",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "book"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                167,
+                76,
+                87,
+                12,
+                91,
+                147,
+                48,
+                214,
+                140,
+                251,
+                235,
+                81,
+                198,
+                228,
+                137,
+                120,
+                142,
+                60,
+                87,
+                161,
+                210,
+                41,
+                162,
+                157,
+                143,
+                187,
+                136,
+                69,
+                125,
+                115,
+                194,
+                172
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_book",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "book"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_book",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "book"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buffer_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "result"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                167,
+                76,
+                87,
+                12,
+                91,
+                147,
+                48,
+                214,
+                140,
+                251,
+                235,
+                81,
+                198,
+                228,
+                137,
+                120,
+                142,
+                60,
+                87,
+                161,
+                210,
+                41,
+                162,
+                157,
+                143,
+                187,
+                136,
+                69,
+                125,
+                115,
+                194,
+                172
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "result"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "result"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "result",
+          "writable": true
+        },
+        {
+          "name": "buffer_oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "oracle"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                167,
+                76,
+                87,
+                12,
+                91,
+                147,
+                48,
+                214,
+                140,
+                251,
+                235,
+                81,
+                198,
+                228,
+                137,
+                120,
+                142,
+                60,
+                87,
+                161,
+                210,
+                41,
+                162,
+                157,
+                143,
+                187,
+                136,
+                69,
+                125,
+                115,
+                194,
+                172
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "oracle"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "oracle"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "oracle",
+          "writable": true
+        },
+        {
+          "name": "owner_program",
+          "address": "CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd"
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "delegate_open_orders",
+      "docs": [
+        "Delegate one trader's `OpenOrders` into the ER so `submit_order` /",
+        "`cancel_order` can update their reserved/claimable ledger inside the",
+        "rollup. Called per trader before they submit (`C6` for per-trader state)."
+      ],
+      "discriminator": [
+        122,
+        106,
+        111,
+        90,
+        105,
+        199,
+        23,
+        119
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Crank authority — must equal `market.crank_authority` (audit H2)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market"
+        },
+        {
+          "name": "buffer_open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "open_orders"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                167,
+                76,
+                87,
+                12,
+                91,
+                147,
+                48,
+                214,
+                140,
+                251,
+                235,
+                81,
+                198,
+                228,
+                137,
+                120,
+                142,
+                60,
+                87,
+                161,
+                210,
+                41,
+                162,
+                157,
+                143,
+                187,
+                136,
+                69,
+                125,
+                115,
+                194,
+                172
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "open_orders"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "open_orders"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "open_orders",
+          "writable": true
+        },
+        {
+          "name": "owner_program",
+          "address": "CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd"
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "owner",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "docs": [
+        "Escrow deposit (L1): fund the trader's claimable balance with real SPL",
+        "tokens before delegation (`INTEGRATIONS.md` 5). `is_base` selects the",
+        "base or quote vault/mint."
+      ],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.base_mint",
+                "account": "Market"
+              },
+              {
+                "kind": "account",
+                "path": "market.quote_mint",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  110,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "is_base",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "finalize_settlement",
+      "docs": [
+        "Flip the market back to `OnBase` once trader settlement is done",
+        "(crank-authority gated)."
+      ],
+      "discriminator": [
+        220,
+        72,
+        152,
+        119,
+        178,
+        196,
+        25,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Checked against `market.crank_authority` in the handler."
+          ],
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "force_undelegate",
+      "docs": [
+        "F11: L1 escape hatch. After the stall timeout from the last commit",
+        "(`REQUIREMENTS.md` F-timeout), anyone may force the undelegation so",
+        "escrow is never stuck. The timeout is measured against `last_commit_slot`",
+        "on the base layer (gating, not matching, so N1 is unaffected). Before the",
+        "first commit, or when the timeout is disabled, the hatch is always open",
+        "(funds are still safe in L1 escrow)."
+      ],
+      "discriminator": [
+        61,
+        253,
+        12,
+        37,
+        121,
+        106,
+        23,
+        106
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Crank authority. `commit`/`undelegate_market` require this to equal",
+            "`market.crank_authority` (audit C2/H1); `force_undelegate` ignores it",
+            "(permissionless escape hatch) but still needs a signer present."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "batch_book",
+          "writable": true
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        },
+        {
+          "name": "oracle_price",
+          "writable": true
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "init_market",
+      "docs": [
+        "F1: create the `Market`, `BatchBook`, and `BatchResult` PDAs on L1.",
+        "Vault pubkeys are recorded; the SPL escrow vaults themselves are wired",
+        "with `ephemeral-rollups-spl` in M1 (see `submit_order`)."
+      ],
+      "discriminator": [
+        33,
+        253,
+        15,
+        116,
+        89,
+        25,
+        127,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "base_mint"
+              },
+              {
+                "kind": "account",
+                "path": "quote_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch_book",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "base_mint"
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "base_vault",
+          "docs": [
+            "Base custody vault, a PDA token account owned by the `Market` PDA."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "quote_vault",
+          "docs": [
+            "Quote custody vault."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  111,
+                  116,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle_price",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitMarketParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "make_open_orders_private",
+      "docs": [
+        "PER: bind a permission to one trader's `OpenOrders` (their reserved",
+        "ledger) so their per-order amounts are TEE-confidential too, with the",
+        "crank authority as the reading member. Run before `delegate_open_orders`."
+      ],
+      "discriminator": [
+        26,
+        27,
+        205,
+        162,
+        54,
+        161,
+        129,
+        76
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market"
+        },
+        {
+          "name": "open_orders",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  110,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "arg",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "open_orders_permission",
+          "writable": true
+        },
+        {
+          "name": "permission_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "owner",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "make_private",
+      "docs": [
+        "PER (Private Ephemeral Rollup): make the market's clearing state private.",
+        "",
+        "Binds a MagicBlock `permission` (live program",
+        "`ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1`) to the confidential",
+        "clearing accounts — `BatchBook` (resting order sizes) and `BatchResult`",
+        "(per-order fills) — listing the crank authority as the sole member with",
+        "full read access. Once these are delegated to a TEE validator and read via",
+        "the TEE RPC, only that member can decrypt the resting book, so a large",
+        "resting order no longer leaks a size signal across windows.",
+        "",
+        "MUST run BEFORE `delegate_market` (the permission CPI requires the",
+        "permissioned account to sign, which only works while this program still",
+        "owns the PDA). `Market` config and the public `OraclePrice` reference are",
+        "intentionally left public. N1 is untouched: this changes *who can read*",
+        "the book, not the determinism of `run_batch`. See",
+        "`docs/integrations/PRIVATE_PAYMENTS.md` and `docs/N1_INVESTIGATION.md`."
+      ],
+      "discriminator": [
+        24,
+        194,
+        92,
+        182,
+        123,
+        211,
+        83,
+        22
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market"
+        },
+        {
+          "name": "book",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "result",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "book_permission",
+          "writable": true
+        },
+        {
+          "name": "result_permission",
+          "writable": true
+        },
+        {
+          "name": "permission_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "process_undelegation",
+      "discriminator": [
+        196,
+        28,
+        41,
+        206,
+        48,
+        37,
+        51,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "buffer"
+        },
+        {
+          "name": "payer",
+          "writable": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_seeds",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "request_marginal_vrf",
+      "docs": [
+        "F6 (VRF tie-break, `MATH.md` section 4, `PLAN.md` T3.4): request",
+        "randomness from `ephemeral-vrf` to assign the indivisible marginal",
+        "remainder. VRF touches ONLY this remainder (a few base units), never",
+        "`p*` and never a non-marginal fill: its blast radius is deliberately",
+        "tiny because the library is unaudited. If VRF does not return in time,",
+        "the deterministic fallback already written by `run_batch` (lowest order",
+        "id) stands. No-op when there is no marginal remainder."
+      ],
+      "discriminator": [
+        87,
+        106,
+        70,
+        108,
+        227,
+        221,
+        52,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "docs": [
+            "Market for the crank-authority gate + result binding (audit R2-Low)."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.base_mint",
+                "account": "Market"
+              },
+              {
+                "kind": "account",
+                "path": "market.quote_mint",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        },
+        {
+          "name": "oracle_queue",
+          "writable": true
+        },
+        {
+          "name": "program_identity",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vrf_program",
+          "address": "Vrf1RNUjXmQGjmQrQLvJHs9SNkvDJEsRVFPkfSQUwGz"
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "client_seed",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "request_window_vrf",
+      "docs": [
+        "F6 (randomized clearing time, `MATH.md` section 8.1): request VRF to set",
+        "the forming window's close target unpredictably within",
+        "`[window_min_ticks, window_max_ticks]`. Like the marginal tie-break, the",
+        "blast radius is bounded: if VRF does not return, the deterministic",
+        "fallback (`window_max_ticks`) closes the window. Reuses `ephemeral-vrf`."
+      ],
+      "discriminator": [
+        179,
+        100,
+        184,
+        76,
+        44,
+        194,
+        240,
+        117
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "oracle_queue",
+          "writable": true
+        },
+        {
+          "name": "program_identity",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vrf_program",
+          "address": "Vrf1RNUjXmQGjmQrQLvJHs9SNkvDJEsRVFPkfSQUwGz"
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "client_seed",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "run_batch",
+      "docs": [
+        "F5/F6/F7: the heartbeat. Crank-only. Clears the current window at one",
+        "uniform `p*` via the pure matcher, writes `BatchResult`, then opens the",
+        "next window.",
+        "",
+        "Determinism (N1): reads no clock or slot; the matcher is a pure function",
+        "of the order multiset and the selection rule. The oracle band and VRF",
+        "tie-break (M3) plug in here: the band gates accept/reject of `p*`, and",
+        "`ClearingRule::ReferenceClamped(p_ref)` replaces the default rule once",
+        "the Lazer read lands. Until then the default `MidpointFloor` is used.",
+        "",
+        "CRANK AUTHORITY (`TECHNICALDESIGN.md` section 5): the only legitimate caller is",
+        "the registered crank schedule. The signer model of the scheduled task is",
+        "being reconciled against `/magicblock` cranks.md; the authority binding",
+        "(`Market.crank_authority`) is enforced once that is confirmed. Today the",
+        "guard is the lifecycle status check below."
+      ],
+      "discriminator": [
+        252,
+        221,
+        85,
+        107,
+        31,
+        61,
+        26,
+        213
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "batch_book",
+          "writable": true
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        },
+        {
+          "name": "oracle_price",
+          "docs": [
+            "Reference price for the band gate. Read-only here; part of the delegated",
+            "set so the read is local to the ER."
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "schedule_batch",
+      "docs": [
+        "Register the batch crank: schedule `run_batch` to fire every",
+        "`tick_interval_ms` inside the ER (`TECHNICALDESIGN.md` section 5). Modeled on the",
+        "verified `crank-counter` ScheduleTask CPI."
+      ],
+      "discriminator": [
+        242,
+        140,
+        87,
+        106,
+        71,
+        226,
+        86,
+        32
+      ],
+      "accounts": [
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Crank authority — must equal `market.crank_authority` (audit C3)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "batch_book",
+          "writable": true
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        },
+        {
+          "name": "oracle_price"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "ScheduleBatchArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_delegated",
+      "docs": [
+        "Mark the market delegated. Separated so it runs after the (possibly",
+        "multi-account) delegation set is in place. Kept on L1."
+      ],
+      "discriminator": [
+        253,
+        14,
+        191,
+        122,
+        180,
+        12,
+        115,
+        101
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Checked against `market.crank_authority` in the handler."
+          ],
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "settle",
+      "docs": [
+        "F10 settlement (L1): reconcile ONE trader's ledger against the committed",
+        "`BatchResult`. Applies their fills at `p*` (buys gain base and spend",
+        "quote, sells give base and gain quote) and refunds the unspent escrow,",
+        "moving everything from `reserved` back to `claimable`. The trader then",
+        "pulls real tokens out with `withdraw`. Integer-only (`REQUIREMENTS.md`",
+        "C5); callable once per trader after `undelegate_market`."
+      ],
+      "discriminator": [
+        175,
+        42,
+        185,
+        87,
+        144,
+        131,
+        102,
+        212
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.base_mint",
+                "account": "Market"
+              },
+              {
+                "kind": "account",
+                "path": "market.quote_mint",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch_result"
+        },
+        {
+          "name": "open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  110,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "open_orders.owner",
+                "account": "OpenOrders"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "submit_order",
+      "docs": [
+        "F3: submit an order. Appends to the forming window and mirrors into the",
+        "trader's `OpenOrders`.",
+        "",
+        "ESCROW (M1, `INTEGRATIONS.md` section 5): the max spend must be escrowed",
+        "into the matching `Vault` via `ephemeral-rollups-spl` before the order",
+        "is accepted. That CPI is wired against the vendored",
+        "`ephemeral-rollups-spl` API in M1; this handler currently records the",
+        "order and reserves the claimable accounting slot. It does NOT yet move",
+        "tokens, and must not be treated as custody-safe until escrow lands."
+      ],
+      "discriminator": [
+        230,
+        150,
+        200,
+        53,
+        92,
+        208,
+        109,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.base_mint",
+                "account": "Market"
+              },
+              {
+                "kind": "account",
+                "path": "market.quote_mint",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch_book",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  110,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "price_limit",
+          "type": "u64"
+        },
+        {
+          "name": "quantity",
+          "type": "u64"
+        },
+        {
+          "name": "flow",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "undelegate_market",
+      "docs": [
+        "F10: commit and undelegate, returning canonical state to L1. Sets status",
+        "`Settling`. Per-trader token reconciliation happens in `settle`."
+      ],
+      "discriminator": [
+        22,
+        56,
+        12,
+        119,
+        64,
+        238,
+        106,
+        106
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Crank authority. `commit`/`undelegate_market` require this to equal",
+            "`market.crank_authority` (audit C2/H1); `force_undelegate` ignores it",
+            "(permissionless escape hatch) but still needs a signer present."
+          ],
+          "signer": true
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "batch_book",
+          "writable": true
+        },
+        {
+          "name": "batch_result",
+          "writable": true
+        },
+        {
+          "name": "oracle_price",
+          "writable": true
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "undelegate_open_orders",
+      "docs": [
+        "Commit + undelegate one trader's OpenOrders back to base so `settle` can",
+        "read it on L1 (ER -> base)."
+      ],
+      "discriminator": [
+        126,
+        47,
+        101,
+        38,
+        206,
+        44,
+        104,
+        229
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "open_orders",
+          "writable": true
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_reference_price",
+      "docs": [
+        "Push the latest Pyth Lazer reference price into `OraclePrice` (F8,",
+        "`TECHNICALDESIGN.md` section 7). Called by the oracle keeper / Lazer receiver.",
+        "`run_batch` reads this to bound `p*` and to detect a stale feed. Stamps",
+        "the current slot for the staleness check."
+      ],
+      "discriminator": [
+        217,
+        163,
+        53,
+        16,
+        48,
+        178,
+        32,
+        125
+      ],
+      "accounts": [
+        {
+          "name": "oracle_price",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "oracle_price.market",
+                "account": "OraclePrice"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "oracle_price"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "price",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "docs": [
+        "Escrow withdraw (L1): return claimable balance to the trader. Settled",
+        "fills become claimable in `settle`, then are withdrawn here."
+      ],
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.base_mint",
+                "account": "Market"
+              },
+              {
+                "kind": "account",
+                "path": "market.quote_mint",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "open_orders",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  110,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "is_base",
+          "type": "bool"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BatchBook",
+      "discriminator": [
+        193,
+        213,
+        170,
+        236,
+        209,
+        203,
+        194,
+        161
+      ]
+    },
+    {
+      "name": "BatchResult",
+      "discriminator": [
+        8,
+        213,
+        249,
+        51,
+        146,
+        73,
+        132,
+        225
+      ]
+    },
+    {
+      "name": "Market",
+      "discriminator": [
+        219,
+        190,
+        213,
+        55,
+        0,
+        227,
+        198,
+        154
+      ]
+    },
+    {
+      "name": "OpenOrders",
+      "discriminator": [
+        139,
+        166,
+        123,
+        206,
+        111,
+        2,
+        116,
+        33
+      ]
+    },
+    {
+      "name": "OraclePrice",
+      "discriminator": [
+        71,
+        166,
+        229,
+        21,
+        54,
+        247,
+        8,
+        34
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "BatchFull",
+      "msg": "The forming batch window is at max_orders_per_batch"
+    },
+    {
+      "code": 6001,
+      "name": "WindowClosed",
+      "msg": "Cannot cancel: the order's batch window has already closed for clearing"
+    },
+    {
+      "code": 6002,
+      "name": "OutOfBand",
+      "msg": "Clearing price fell outside the Pyth Lazer reference band"
+    },
+    {
+      "code": 6003,
+      "name": "StaleOracle",
+      "msg": "Pyth Lazer feed is older than the configured max age; tick skipped"
+    },
+    {
+      "code": 6004,
+      "name": "NotCrankAuthority",
+      "msg": "run_batch may only be invoked by the configured crank authority"
+    },
+    {
+      "code": 6005,
+      "name": "WrongStatus",
+      "msg": "Market is not in the expected lifecycle status for this instruction"
+    },
+    {
+      "code": 6006,
+      "name": "VrfTimeout",
+      "msg": "VRF did not return in time; fell back to the deterministic tie-break"
+    },
+    {
+      "code": 6007,
+      "name": "MarketMismatch",
+      "msg": "Order references a market it does not belong to"
+    },
+    {
+      "code": 6008,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6009,
+      "name": "OrderNotFound",
+      "msg": "Order not found in the forming window"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient deposited balance to escrow this order"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidPermissionProgram",
+      "msg": "Permission-program account is not the canonical MagicBlock permission program"
+    },
+    {
+      "code": 6012,
+      "name": "AlreadySettled",
+      "msg": "This trader has already been settled for this batch window"
+    },
+    {
+      "code": 6013,
+      "name": "FillExceedsReserved",
+      "msg": "Filled quantity exceeds the trader's reserved escrow (matcher/escrow desync)"
+    },
+    {
+      "code": 6014,
+      "name": "OracleDeviation",
+      "msg": "Reference price update is zero or deviates too far from the previous price"
+    }
+  ],
+  "types": [
+    {
+      "name": "BatchBook",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "window",
+            "type": "u64"
+          },
+          {
+            "name": "n_orders",
+            "type": "u16"
+          },
+          {
+            "name": "_pad",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "orders",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "Order"
+                  }
+                },
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BatchResult",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "window",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "_pad",
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          },
+          {
+            "name": "clearing_price",
+            "type": "u64"
+          },
+          {
+            "name": "matched_volume",
+            "type": "u64"
+          },
+          {
+            "name": "n_fills",
+            "type": "u16"
+          },
+          {
+            "name": "_pad2",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "marginal_remainder",
+            "docs": [
+              "Indivisible base units left at the margin after integer pro-rata, summed",
+              "across both sides. This (and only this) is the VRF blast radius."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "n_marginal_tied",
+            "docs": [
+              "Order ids tied at the margin that share the remainder."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "_pad3",
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          },
+          {
+            "name": "vrf_winner",
+            "docs": [
+              "The tied order assigned the remainder (set deterministically by",
+              "`run_batch`; overwritten by the VRF callback if it lands in time)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "marginal_tied",
+            "type": {
+              "array": [
+                "u64",
+                16
+              ]
+            }
+          },
+          {
+            "name": "fills",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "Fill"
+                  }
+                },
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Fill",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order_id",
+            "type": "u64"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "filled",
+            "type": "u64"
+          },
+          {
+            "name": "side",
+            "docs": [
+              "SIDE_BUY | SIDE_SELL (`book.rs`), so settlement is self-describing from",
+              "`BatchResult` alone without re-reading the book."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "_pad",
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitMarketParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tick_interval_ms",
+            "type": "u32"
+          },
+          {
+            "name": "commit_every_ticks",
+            "type": "u32"
+          },
+          {
+            "name": "band_delta_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_orders_per_batch",
+            "type": "u16"
+          },
+          {
+            "name": "oracle_max_age_slots",
+            "type": "u32"
+          },
+          {
+            "name": "force_undelegate_timeout_slots",
+            "type": "u32"
+          },
+          {
+            "name": "window_min_ticks",
+            "type": "u32"
+          },
+          {
+            "name": "window_max_ticks",
+            "type": "u32"
+          },
+          {
+            "name": "cfmm_base",
+            "type": "u64"
+          },
+          {
+            "name": "cfmm_quote",
+            "type": "u64"
+          },
+          {
+            "name": "cfmm_band_bps",
+            "type": "u16"
+          },
+          {
+            "name": "cfmm_levels",
+            "type": "u16"
+          },
+          {
+            "name": "lazer_feed_id",
+            "type": "u64"
+          },
+          {
+            "name": "crank_authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "base_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "tick_interval_ms",
+            "docs": [
+              "Batch tick cadence (`TECHNICALDESIGN.md` section 3, default 50)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "commit_every_ticks",
+            "docs": [
+              "Checkpoint cadence in ticks (`REQUIREMENTS.md` C7)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "band_delta_bps",
+            "docs": [
+              "Reference-band half-width in basis points (`TECHNICALDESIGN.md` section 7). Zero",
+              "disables the band (clear without a reference check)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "oracle_max_age_slots",
+            "docs": [
+              "Max age (in slots) of the oracle price before a tick is skipped as stale",
+              "(`REQUIREMENTS.md` oracle max-age). Zero disables the staleness check."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "max_orders_per_batch",
+            "docs": [
+              "Slab capacity per batch; must match `BatchBook`/`BatchResult` capacity",
+              "and fit the `run_batch` CU budget (`REQUIREMENTS.md` C1, C2)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "MarketStatus"
+              }
+            }
+          },
+          {
+            "name": "lazer_feed_id",
+            "type": "u64"
+          },
+          {
+            "name": "crank_authority",
+            "docs": [
+              "Only legitimate caller of `run_batch` (`TECHNICALDESIGN.md` section 5)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "current_window",
+            "docs": [
+              "The forming batch window id; bumped each tick."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "next_order_id",
+            "docs": [
+              "Monotonic order-id source."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_commit_slot",
+            "docs": [
+              "Slot of the last `commit` checkpoint; drives the `force_undelegate`",
+              "stall timeout (`REQUIREMENTS.md` F-timeout)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "force_undelegate_timeout_slots",
+            "docs": [
+              "After this many slots without a commit, anyone may `force_undelegate`",
+              "so escrow is never stuck (`REQUIREMENTS.md` F11). Zero disables."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "window_min_ticks",
+            "docs": [
+              "Randomized clearing-time band, in crank ticks (`MATH.md` section 8.1,",
+              "arXiv 2405.09764). The window closes after `window_target_ticks` crank",
+              "ticks; the target is drawn from `[window_min_ticks, window_max_ticks]`",
+              "by VRF and is unpredictable until the window closes. `window_max_ticks",
+              "<= 1` disables randomization (close every tick, original cadence)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "window_max_ticks",
+            "type": "u32"
+          },
+          {
+            "name": "window_target_ticks",
+            "docs": [
+              "Current window's close target (set to max as a deterministic fallback at",
+              "window open; re-randomized into the band by `consume_window_vrf`)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "window_ticks_elapsed",
+            "docs": [
+              "Crank ticks elapsed in the forming window."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "cfmm_base",
+            "docs": [
+              "Constant-product CFMM backstop reserves (`MATH.md` section 8.3, arXiv",
+              "2210.04929). When both are non-zero, `run_batch` adds the pool's",
+              "synthetic maker ladder to the batch so a thin book still clears against",
+              "passive liquidity. `cfmm_band_bps` is the ladder half-width around spot;",
+              "`cfmm_levels` is the discretization per side."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cfmm_quote",
+            "type": "u64"
+          },
+          {
+            "name": "cfmm_band_bps",
+            "type": "u16"
+          },
+          {
+            "name": "cfmm_levels",
+            "type": "u16"
+          },
+          {
+            "name": "delegated_at_slot",
+            "docs": [
+              "Slot at which the market was last delegated (set in `set_delegated`).",
+              "Used as the `force_undelegate` stall baseline before the first commit so",
+              "a freshly-delegated market cannot be torn down instantly (audit M3)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketStatus",
+      "docs": [
+        "Lifecycle status. Encoded as a Borsh enum on this normal (non zero-copy)",
+        "account, so a real enum is fine here (`REQUIREMENTS.md` C4 only constrains",
+        "the zero-copy accounts)."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "OnBase"
+          },
+          {
+            "name": "Delegated"
+          },
+          {
+            "name": "Settling"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OpenOrders",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "base_claimable",
+            "docs": [
+              "Free balance the trader has deposited and can spend or withdraw.",
+              "Credited by `deposit` (L1) and by clearing fills; debited by `withdraw`",
+              "(L1) and when an order is submitted (moved to `*_reserved`)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "quote_claimable",
+            "type": "u64"
+          },
+          {
+            "name": "base_reserved",
+            "docs": [
+              "Balance locked behind live orders (the escrow). Moved here from",
+              "claimable on `submit_order`, back on `cancel_order`, and converted at",
+              "`p*` on settlement. This is the internal escrow ledger that lets",
+              "`submit_order` run inside the ER with no token CPI (the real SPL moves",
+              "happen only at the L1 boundary, `deposit`/`withdraw`)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "quote_reserved",
+            "type": "u64"
+          },
+          {
+            "name": "live_order_ids",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "last_settled_window",
+            "docs": [
+              "Window id of the last `BatchResult` this trader was settled against",
+              "(`u64::MAX` = never settled). Makes `settle` one-shot per (trader, window)",
+              "so fills cannot be re-credited and the vault drained (audit C1)."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OraclePrice",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "Who may push prices (the Lazer keeper / receiver authority)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "price",
+            "docs": [
+              "Reference price scaled to `PRICE_SCALE`. Zero means \"unset\": the band is",
+              "treated as disabled until a real price is pushed (so a market can run",
+              "before the oracle is wired, e.g. in the demo)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_update_slot",
+            "docs": [
+              "Slot at which `price` was last written; used for the staleness check."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Order",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order_id",
+            "type": "u64"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "price_limit",
+            "type": "u64"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "remaining",
+            "type": "u64"
+          },
+          {
+            "name": "window",
+            "type": "u64"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "flow",
+            "type": "u8"
+          },
+          {
+            "name": "_pad",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ScheduleBatchArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "task_id",
+            "type": "i64"
+          },
+          {
+            "name": "execution_interval_millis",
+            "type": "i64"
+          },
+          {
+            "name": "iterations",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}
