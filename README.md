@@ -148,7 +148,7 @@ solana program show CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd --url devnet
 
 **Web app:** [https://projectcrossbar.vercel.app](https://projectcrossbar.vercel.app)
 
-Cinematic landing page + devnet trading dashboard (dual RPC, Flash reference prices, Kora gasless relay on [Heroku](https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com)). Connect a devnet wallet and open `/dashboard`.
+Cinematic landing page + devnet trading dashboard (dual RPC, Flash live prices + Pyth Benchmarks 24h context, Kora gasless relay on [Heroku](https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com)). Connect a devnet wallet and open `/dashboard`.
 
 ---
 

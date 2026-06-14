@@ -38,12 +38,42 @@ Open http://localhost:5173/docs for protocol documentation.
 | `VITE_KORA_FEE_PAYER` | fee payer pubkey | Required for gasless feePayer in txs |
 | `VITE_FLASH_MOCK` | `0` (hosted) | `1` = offline sample Flash data in dashboard |
 
+See **Live market context** below for marquee/chart data sources.
+
 ## Architecture
 
 - **Dual RPC:** `useCrossbarProgram` mirrors `tests/er-demo.ts` (base + ER Anchor providers).
 - **Polling:** `useMarketPolling` reads Market, BatchBook, BatchResult, OpenOrders, Oracle every 2s.
 - **Integer math:** prices use `PRICE_SCALE = 1_000_000` until UI format boundary.
 - **Kora:** hosted relayer at `https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com` for gasless submit.
+
+## Live market context (marquee + chart)
+
+Market context on `/dashboard` is **off-chain only** — it does not feed `run_batch` or the matcher (N1).
+
+| Data | Source | Module |
+| --- | --- | --- |
+| Live spot price | Flash Trade `GET /prices` (Pyth Lazer) | `src/lib/flash-prices.ts` |
+| 24h change % | Pyth Benchmarks hourly candles (`Crypto.{SYMBOL}/USD`) | `src/lib/pyth-benchmarks.ts` |
+| Intraday chart + 24h high/low | Pyth Benchmarks TradingView shim | `src/lib/market-data.ts` |
+| Fallback (change + chart) | CoinGecko via proxied API | `src/lib/coingecko.ts` |
+
+Flash's REST API has **no** 24h change or history endpoint. Pyth Benchmarks uses the same oracle family as Flash (`pythTicker` strings like `Crypto.SOL/USD`). CoinGecko is only used when Pyth fails.
+
+**Dev proxies** (Vite `vite.config.ts`):
+
+- `/api/pyth/*` → `benchmarks.pyth.network`
+- `/api/coingecko/*` → `api.coingecko.com/api/v3`
+
+**Production** (Vercel edge handlers in `api/pyth/` and `api/coingecko/`): responses cached at the edge so the browser does not hit free-tier rate limits.
+
+| Server env (Vercel only) | Purpose |
+| --- | --- |
+| `COINGECKO_API_KEY` | Optional CoinGecko demo key for fallback tier headroom |
+
+Pyth docs note Benchmarks may require a Bearer token from **July 2026**; add `PYTH_API_KEY` to the edge proxy when that lands.
+
+After changing proxy or env wiring, restart `npm run dev` and hard-refresh the dashboard (Cmd+Shift+R).
 
 ## UI kit
 

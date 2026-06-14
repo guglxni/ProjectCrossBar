@@ -198,6 +198,25 @@ risk-management convenience, not a clearing path, and must never feed back into
 3. Adopt `tap-trade`'s latency HUD around CrossBar `submit_order` to visualise the
    ~30–50 ms ER confirmation both venues share.
 
+## Dashboard live market (web app)
+
+The `/dashboard` marquee and live market panel compose Flash + Pyth for **context only**
+(never inside `run_batch`):
+
+| UI surface | Primary | Fallback |
+| --- | --- | --- |
+| Marquee + headline price | Flash `GET /prices` | CoinGecko simple/price (when Flash down) |
+| 24h change % | Pyth Benchmarks (`Crypto.{SYMBOL}/USD`, hourly) | CoinGecko `usd_24h_change` |
+| Intraday area chart | Pyth Benchmarks TradingView shim | CoinGecko `market_chart` |
+
+Implementation: `web/src/lib/flash-prices.ts`, `pyth-benchmarks.ts`, `market-data.ts`,
+`coingecko.ts`. Vite dev and Vercel edge proxies under `/api/pyth` and `/api/coingecko`
+centralize calls and cache responses. Optional `COINGECKO_API_KEY` on Vercel for fallback
+tier limits. See [`web/README.md`](../../web/README.md).
+
+Flash REST does **not** expose 24h stats or candles; Pyth Benchmarks is the aligned
+choice because Flash marks already come from Pyth Lazer.
+
 ## Honesty notes — what is *not* claimed
 
 - CrossBar does **not** embed, fork, or CPI into Flash Trade. They compose at the

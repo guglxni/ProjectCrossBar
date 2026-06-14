@@ -31,6 +31,8 @@ import {
   DOCS_SECTIONS,
   ENV_VARS,
   INSTRUCTIONS,
+  LIVE_MARKET_SOURCES,
+  LIVE_MARKET_SYMBOLS,
   PDA_SEEDS,
   QUICKSTART_STEPS,
   type DocsSectionId,
@@ -331,8 +333,87 @@ acceptable p* in [p_ref - half, p_ref + half]`}</DocsCodeBlock>
             <p>
               Production uses Pyth Lazer on the 50ms channel. The dashboard oracle
               panel supports an authority-gated update_reference_price override for
-              devnet demos.
+              devnet demos. For off-chain marquee prices and 24h context, see{" "}
+              <button
+                type="button"
+                onClick={() => scrollTo("live-market")}
+                className="font-medium text-[var(--accent)] hover:underline"
+              >
+                Live market data
+              </button>
+              .
             </p>
+          </DocsSection>
+
+          <DocsSection id="live-market" title="Live market data">
+            <p className="text-foreground">
+              The dashboard marquee and live market panel show mainnet context only.
+              Nothing here feeds run_batch or the matcher (N1).
+            </p>
+            <p>
+              Flash Trade supplies live marks from Pyth Lazer but has no 24h change or
+              history endpoint. Pyth Benchmarks fills that gap using the same ticker
+              strings Flash uses ({`Crypto.{SYMBOL}/USD`}). CoinGecko is a fallback when
+              Pyth is unavailable.
+            </p>
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Primary</TableHead>
+                    <TableHead>Fallback</TableHead>
+                    <TableHead className="font-mono text-xs">Module</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {LIVE_MARKET_SOURCES.map((row) => (
+                    <TableRow key={row.data}>
+                      <TableCell className="font-medium text-foreground">
+                        {row.data}
+                      </TableCell>
+                      <TableCell className="text-xs">{row.primary}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {row.fallback}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {row.module}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <DocsList
+              items={[
+                `Marquee symbols: ${LIVE_MARKET_SYMBOLS}`,
+                "Dev proxies: /api/pyth → benchmarks.pyth.network, /api/coingecko → api.coingecko.com",
+                "Production: Vercel edge handlers in web/api/ cache responses at the edge",
+                "Click a marquee coin to switch the intraday chart (flash.trade-style UX)",
+              ]}
+            />
+            <Alert>
+              <AlertDescription className="text-sm">
+                Pyth docs note Benchmarks may require a Bearer token from July 2026.
+                Set PYTH_API_KEY on the edge proxy when that lands. Optional
+                COINGECKO_API_KEY on Vercel improves fallback tier headroom.
+              </AlertDescription>
+            </Alert>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <Link to="/dashboard">Open live market panel</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <a
+                  href="https://docs.pyth.network/price-feeds/core/use-historical-price-data"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Pyth Benchmarks docs
+                  <ExternalLink className="ml-1 inline h-3 w-3" />
+                </a>
+              </Button>
+            </div>
           </DocsSection>
 
           <DocsSection id="devnet" title="Devnet">

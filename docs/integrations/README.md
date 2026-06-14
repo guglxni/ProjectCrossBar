@@ -6,7 +6,7 @@ protocols. Documents here are **integration plans grounded in verified sources**
 
 | Doc | What it covers | Status |
 | --- | --- | --- |
-| [FLASH_TRADE.md](FLASH_TRADE.md) | Composing CrossBar (spot batch auction) with Flash Trade V2 (perps) on the **same MagicBlock rollup** — shared substrate, shared Pyth Lazer reference, spot/perp hedging. | **Tiers 0–2 implemented** (`clients/flash/`, `tests/hedge-demo.ts`); Tier 3 roadmap |
+| [FLASH_TRADE.md](FLASH_TRADE.md) | Composing CrossBar (spot batch auction) with Flash Trade V2 (perps) on the **same MagicBlock rollup** — shared substrate, shared Pyth Lazer reference, spot/perp hedging. Dashboard live market: Flash prices + Pyth Benchmarks 24h/chart. | **Tiers 0–2 implemented** (`clients/flash/`, `tests/hedge-demo.ts`); Tier 3 roadmap |
 | [PRIVATE_PAYMENTS.md](PRIVATE_PAYMENTS.md) | Upgrading CrossBar's Ephemeral Rollup to a **Private** ER (PER): TEE-confidential order sizes + confidential escrow via the permission program CrossBar already depends on. | **Base permissions implemented** (`make_private`, `tests/private-demo.ts`); TEE/ephemeral step roadmap |
 
 ## The common thread

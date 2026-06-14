@@ -31,8 +31,12 @@ import { ProgramFooter } from "@/components/dashboard/ProgramFooter";
 import { VerificationPanel } from "@/components/dashboard/VerificationPanel";
 import { DemoScenariosPanel } from "@/components/dashboard/DemoScenariosPanel";
 import { RoundTripPanel } from "@/components/dashboard/RoundTripPanel";
+import { PriceTicker } from "@/components/dashboard/PriceTicker";
+import { LiveMarketPanel } from "@/components/dashboard/LiveMarketPanel";
+import { MarketTickerProvider } from "@/context/MarketTickerContext";
 
 const NAV = [
+  { id: "livemarket", label: "Live market" },
   { id: "roundtrip", label: "One-click round-trip" },
   { id: "lifecycle", label: "Lifecycle" },
   { id: "book", label: "Batch book" },
@@ -61,6 +65,7 @@ export function DashboardPage() {
   );
 
   return (
+    <MarketTickerProvider>
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
@@ -114,7 +119,11 @@ export function DashboardPage() {
           <WalletMultiButton className="crossbar-wallet-btn" />
         </header>
 
+        <PriceTicker />
+
         <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 md:p-6">
+          <LiveMarketPanel />
+
           <MarketConfigBar />
 
           {poll.error && (
@@ -141,5 +150,6 @@ export function DashboardPage() {
         </main>
       </SidebarInset>
     </SidebarProvider>
+    </MarketTickerProvider>
   );
 }

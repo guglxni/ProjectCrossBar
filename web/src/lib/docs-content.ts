@@ -20,6 +20,7 @@ export type DocsSectionId =
   | "accounts"
   | "instructions"
   | "oracle"
+  | "live-market"
   | "devnet"
   | "quickstart";
 
@@ -31,6 +32,7 @@ export const DOCS_SECTIONS: { id: DocsSectionId; label: string }[] = [
   { id: "accounts", label: "Accounts" },
   { id: "instructions", label: "Instructions" },
   { id: "oracle", label: "Oracle band" },
+  { id: "live-market", label: "Live market data" },
   { id: "devnet", label: "Devnet" },
   { id: "quickstart", label: "Quickstart" },
 ];
@@ -270,7 +272,7 @@ export const QUICKSTART_STEPS = [
   {
     title: "Run locally",
     code: "npm install && npm run dev",
-    note: "Open http://localhost:5173 and connect a devnet wallet.",
+    note: "Open http://localhost:5173/dashboard and hard-refresh (Cmd+Shift+R) after proxy changes.",
   },
   {
     title: "Full ER round-trip (CLI)",
@@ -284,6 +286,30 @@ export const QUICKSTART_STEPS = [
   },
 ];
 
+export const LIVE_MARKET_SOURCES = [
+  {
+    data: "Live spot price",
+    primary: "Flash Trade GET /prices",
+    fallback: "CoinGecko simple/price",
+    module: "flash-prices.ts",
+  },
+  {
+    data: "24h change %",
+    primary: "Pyth Benchmarks (hourly candles)",
+    fallback: "CoinGecko usd_24h_change",
+    module: "pyth-benchmarks.ts",
+  },
+  {
+    data: "Intraday chart + 24h high/low",
+    primary: "Pyth Benchmarks TradingView shim",
+    fallback: "CoinGecko market_chart",
+    module: "market-data.ts",
+  },
+] as const;
+
+export const LIVE_MARKET_SYMBOLS =
+  "SOL, ETH, BTC, BNB, HYPE, JUP, BONK, JTO, PYTH, WIF";
+
 export const ENV_VARS = [
   { name: "VITE_BASE_RPC", default: BASE_RPC, purpose: "Solana L1 RPC" },
   { name: "VITE_ER_RPC", default: ER_RPC, purpose: "MagicBlock Ephemeral Rollup RPC" },
@@ -294,4 +320,9 @@ export const ENV_VARS = [
   { name: "VITE_KORA_FEE_PAYER", default: "3dJTjgE…DSSHE", purpose: "Kora fee payer pubkey" },
   { name: "VITE_FLASH_MOCK", default: "0 (hosted)", purpose: "1 = offline sample Flash data in dashboard" },
   { name: "VITE_FLASH_API_URL", default: "https://flashapi.trade", purpose: "Flash read-only API" },
+  {
+    name: "COINGECKO_API_KEY",
+    default: "(Vercel server env only)",
+    purpose: "Optional CoinGecko demo key for fallback rate limits",
+  },
 ];
