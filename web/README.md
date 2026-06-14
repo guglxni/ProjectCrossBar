@@ -65,7 +65,7 @@ Flash's REST API has **no** 24h change or history endpoint. Pyth Benchmarks uses
 - `/api/pyth/*` → `benchmarks.pyth.network`
 - `/api/coingecko/*` → `api.coingecko.com/api/v3`
 
-**Production** (Vercel edge handlers in `api/pyth/` and `api/coingecko/`): responses cached at the edge so the browser does not hit free-tier rate limits.
+**Production** (Vercel rewrites in `vercel.json`): `/api/pyth` and `/api/coingecko` proxy to upstream hosts at the edge. The SPA fallback excludes `/api/*` so routes are not swallowed by `index.html`.
 
 | Server env (Vercel only) | Purpose |
 | --- | --- |

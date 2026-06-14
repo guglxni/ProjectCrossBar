@@ -387,8 +387,7 @@ acceptable p* in [p_ref - half, p_ref + half]`}</DocsCodeBlock>
             <DocsList
               items={[
                 `Marquee symbols: ${LIVE_MARKET_SYMBOLS}`,
-                "Dev proxies: /api/pyth → benchmarks.pyth.network, /api/coingecko → api.coingecko.com",
-                "Production: Vercel edge handlers in web/api/ cache responses at the edge",
+                "Dev and production proxies: /api/pyth and /api/coingecko (Vercel rewrites to upstream)",
                 "Click a marquee coin to switch the intraday chart (flash.trade-style UX)",
               ]}
             />
