@@ -35,6 +35,10 @@ async function cgFetch<T>(path: string, signal?: AbortSignal, ttlMs = 90_000): P
     });
     if (res.status === 429 && hit) return hit.data;
     if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
+    const ct = res.headers.get("content-type") ?? "";
+    if (!ct.includes("application/json")) {
+      throw new Error("CoinGecko: non-JSON response");
+    }
     const data = (await res.json()) as T;
     cache.set(key, { data, expiry: Date.now() + ttlMs });
     return data;

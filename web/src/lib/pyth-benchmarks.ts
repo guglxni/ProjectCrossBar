@@ -38,6 +38,10 @@ async function pythFetch<T>(
       headers: { accept: "application/json" },
     });
     if (!res.ok) throw new Error(`Pyth Benchmarks ${res.status}`);
+    const ct = res.headers.get("content-type") ?? "";
+    if (!ct.includes("application/json")) {
+      throw new Error("Pyth Benchmarks: non-JSON response");
+    }
     const data = (await res.json()) as T;
     cache.set(key, { data, expiry: Date.now() + ttlMs });
     return data;

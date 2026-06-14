@@ -5,9 +5,7 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "rewrites": [
-    { "source": "/api/coingecko/:path*", "destination": "/api/coingecko/:path*" },
-    { "source": "/api/pyth/:path*", "destination": "/api/pyth/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
