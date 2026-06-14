@@ -1,6 +1,18 @@
 # TECHNICALDESIGN.md - Module and State Design
 
-Module-level design for the Project CrossBar program. This is the bridge between `architecture.md` (shape) and the code. Instruction names and PDA names here are canonical; do not rename them without updating every doc.
+Module-level design for the Project CrossBar program. This is the bridge between the two-plane architecture and the code. Instruction names and PDA names here are canonical.
+
+Auction mathematics: [`MATH.md`](MATH.md). Diagram sources: [`docs/diagrams/`](docs/diagrams/) (re-render with `./scripts/render-diagrams.sh`).
+
+## Account model
+
+![On-chain PDA layout and instruction planes](docs/diagrams/account-model.png)
+
+## Settlement lifecycle
+
+Clearing runs in the ER; SPL reconciliation runs on L1 after undelegation. The settle keeper pattern is automated in `tests/crank-demo.ts`.
+
+![Settlement lifecycle — clear in ER, reconcile on L1](docs/diagrams/settlement.png)
 
 ## 1. Crate and module layout
 
@@ -39,7 +51,7 @@ Tick interval: **50 ms**, aligned to the Pyth Lazer 50ms channel. Rationale: the
 
 ## 4. Instructions
 
-Signatures are written argument-first; account contexts are summarized. Final account lists come from the delegation and SPL patterns in `INTEGRATIONS.md`, do not hand-roll them before reading those.
+Signatures are written argument-first; account contexts are summarized. Final account lists follow the delegation and SPL patterns from the MagicBlock SDK and `ephemeral-rollups-spl`.
 
 ### 4.1 `init_market(params)` (base L1)
 
@@ -59,13 +71,15 @@ Allowed only while the order's batch window is still forming, that is before the
 
 ### 4.5 `run_batch()` (ER, crank only)
 
-The heartbeat. Not user-callable in effect (guard on the crank authority). Steps, matching `architecture.md` section 4:
+The heartbeat. Not user-callable in effect (guard on the crank authority). Steps:
+
+![run_batch clearing pipeline](docs/diagrams/clearing.png)
 
 1. Read Pyth Lazer feed, compute reference band. If stale beyond max age, write a skipped `BatchResult` and return.
 2. Snapshot orders in the current window from `BatchBook`, split into maker and taker flow.
 3. Aggregate demand and supply curves (`clearing/curves.rs`).
-4. Compute `p*` (`clearing/clear.rs`). If `p*` outside band, reject the batch (write a rejected `BatchResult`, leave orders for next tick or expire per policy).
-5. Fill crossing orders at `p*`; pro-rata at margin; VRF tie-break only for indivisible remainder (`clearing/prorata.rs`, `rng/vrf.rs`).
+4. Compute `p*` (`clearing/clear.rs`). If `p*` outside band, reject the batch.
+5. Fill crossing orders at `p*`; pro-rata at margin; VRF tie-break for indivisible remainder.
 6. Write `BatchResult`, update `OpenOrders` claimable balances.
 
 `run_batch` must be deterministic given the batch set and the reference price. No reads of clock, slot, or arrival order inside the matching.
@@ -78,21 +92,21 @@ Calls `commit_accounts` to checkpoint `BatchBook`, `OpenOrders`, and `Vault` to 
 
 Commits and undelegates the PDAs, returning canonical state to L1. Sets status `Settling`.
 
-### 4.8 `settle()` (base, Magic Actions)
+### 4.8 `settle()` (base L1)
 
-Runs after undelegation. Moves tokens for the recorded fills and refunds unfilled escrow, reading claimable balances from `OpenOrders`. Sets status back to `OnBase`. This is where token movement becomes real on L1.
+Runs after undelegation (see settlement diagram above). Moves tokens for recorded fills and refunds unfilled escrow. One-shot per `(trader, window)` via `last_settled_window`. Follow with `finalize_settlement()` to return the market to `OnBase`.
 
 ### 4.9 `force_undelegate()` (base, fallback)
 
-L1 escape hatch with a timeout (`REQUIREMENTS.md`). If the ER stalls past the timeout, anyone can trigger undelegation so escrow is never stuck.
+L1 escape hatch with a configurable timeout on `Market`. If the ER stalls past the timeout, anyone can trigger undelegation so escrow is never stuck.
 
 ## 5. Crank wiring
 
-Register a scheduled task through MagicBlock's scheduling program (CPI) that calls `run_batch` every `tick_interval_ms` inside the ER. MagicBlock's crank docs list auctions and order matching as intended use cases. The crank authority is the only legitimate caller of `run_batch`; store it on `Market` and check it. See `INTEGRATIONS.md` crank section and docs.magicblock.gg crank introduction.
+Register a scheduled task through MagicBlock's scheduling program (CPI) that calls `run_batch` every `tick_interval_ms` inside the ER. The crank authority is the only legitimate caller of `run_batch`; store it on `Market` and check it. See [MagicBlock crank docs](https://docs.magicblock.gg).
 
 ## 6. State structs
 
-Bounded and slab-style. Read OpenBook v2 `bookside`/slab, `EventHeap`, and open-orders shapes before finalizing (`INTEGRATIONS.md` OpenBook section). Sketch, not final layout:
+Bounded and slab-style. Sketch layout:
 
 ```rust
 // state/market.rs
@@ -160,15 +174,18 @@ Use `zero_copy` for `BatchBook` and `BatchResult` because they are the large fix
 
 ## 7. Oracle band
 
-```
-p_ref      = Pyth Lazer feed value, scaled to PRICE_SCALE
-half       = p_ref * band_delta_bps / 10_000
-band       = [p_ref - half, p_ref + half]
-accept p*  iff band.contains(p*) and feed age <= max_age
-```
+$$
+p_{\text{ref}} = \text{Pyth Lazer feed value, scaled to PRICE\_SCALE}
+$$
 
-15K compute units per Lazer transaction, up to 20 feeds, 50ms channel. Keep the read tight; it runs every tick. See `oracle/lazer.rs` and `INTEGRATIONS.md` Pyth section.
+$$
+\text{half} = \frac{p_{\text{ref}} \cdot \texttt{band\_delta\_bps}}{10{,}000}
+\qquad
+\text{band} = [p_{\text{ref}} - \text{half},\; p_{\text{ref}} + \text{half}]
+$$
+
+Accept $p^*$ iff $p^* \in \text{band}$ and feed age $\le$ `max_age`. Keep the read tight; it runs every tick. See `programs/crossbar/src/state/oracle.rs`.
 
 ## 8. Errors (`err.rs`)
 
-`BatchFull`, `WindowClosed` (cancel after close), `OutOfBand`, `StaleOracle`, `NotCrankAuthority`, `EmptyCross` (no crossing this tick, not an error, write empty cleared result), `VrfTimeout` (fell back to deterministic tie-break). Each maps to a documented failure mode in `architecture.md` section 6.
+`BatchFull`, `WindowClosed`, `OutOfBand`, `StaleOracle`, `NotCrankAuthority`, `EmptyCross`, `VrfTimeout`. Each maps to a documented failure mode in `MATH.md` §7–8.

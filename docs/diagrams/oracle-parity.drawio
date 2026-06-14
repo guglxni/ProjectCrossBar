@@ -1,0 +1,33 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="oracle-parity" id="parity">
+    <mxGraphModel dx="1100" dy="650" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1060" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Certified parity — Project CrossBar engine vs Coq-extracted oracle" style="text;html=1;align=center;fontSize=16;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="160" y="12" width="740" height="28" as="geometry"/></mxCell>
+
+        <mxCell id="fix" value="batch fixture B&#10;(bids + asks + optional CFMM)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="40" y="180" width="180" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="eng" value="clearing engine&#10;(Rust, run_batch logic)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="280" y="100" width="170" height="80" as="geometry"/></mxCell>
+        <mxCell id="ora" value="Coq-extracted UM&#10;(vendor/dsam OCaml)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="280" y="250" width="170" height="80" as="geometry"/></mxCell>
+
+        <mxCell id="out1" value="p*, volume,&#10;per-order fills" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="520" y="110" width="120" height="60" as="geometry"/></mxCell>
+        <mxCell id="out2" value="p*, volume,&#10;per-order fills" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="520" y="260" width="120" height="60" as="geometry"/></mxCell>
+
+        <mxCell id="diff" value="byte-identical&#10;assertion" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="700" y="175" width="130" height="90" as="geometry"/></mxCell>
+
+        <mxCell id="pass" value="4006 / 4006 batches PASS&#10;(Layer 2 certified parity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="880" y="185" width="150" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="layers" value="&lt;b&gt;Two layers&lt;/b&gt;&lt;br&gt;L1: independent Rust UM re-implementation (clearing/tests/parity.rs)&lt;br&gt;L2: extracted OCaml from machine-checked Coq (tests/parity/run_parity.sh)&lt;br&gt;&lt;br&gt;Uniqueness theorem (ITP 2021): fair + uniform + IR matching is unique in per-order volumes — any mismatch is a real bug." style="whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#ccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" vertex="1" parent="1"><mxGeometry x="280" y="380" width="750" height="90" as="geometry"/></mxCell>
+
+        <mxCell id="ef1" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="fix" target="eng"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ef2" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="fix" target="ora"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ef3" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="eng" target="out1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ef4" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="ora" target="out2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ef5" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="out1" target="diff"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ef6" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="out2" target="diff"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ef7" value="match" style="endArrow=block;html=1;strokeColor=#38763d;strokeWidth=2;" edge="1" parent="1" source="diff" target="pass"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

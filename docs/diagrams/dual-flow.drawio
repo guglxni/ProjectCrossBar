@@ -1,0 +1,33 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="dual-flow" id="dfba">
+    <mxGraphModel dx="1100" dy="700" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1080" pageHeight="520" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Dual-flow batch auction (DFBA) — one p*, two protected flows" style="text;html=1;align=center;fontSize=16;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="200" y="14" width="680" height="26" as="geometry"/></mxCell>
+
+        <mxCell id="in" value="batch window orders&#10;(tagged at submit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="40" y="200" width="140" height="60" as="geometry"/></mxCell>
+
+        <mxCell id="mk" value="MAKER flow&#10;resting liquidity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dce8f5;strokeColor=#4a6fa5;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="240" y="120" width="150" height="70" as="geometry"/></mxCell>
+        <mxCell id="tk" value="TAKER flow&#10;aggressive orders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4dc;strokeColor=#c45c4a;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="240" y="260" width="150" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="cm" value="D_m(p), S_m(p)&#10;maker curves" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="440" y="120" width="130" height="70" as="geometry"/></mxCell>
+        <mxCell id="ct" value="D_t(p), S_t(p)&#10;taker curves" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="440" y="260" width="130" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="agg" value="aggregate executable&#10;interest (combined)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="620" y="190" width="150" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="p" value="single uniform p*&#10;+ fills per flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="820" y="190" width="150" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="note" value="Property preserved: maker and taker alike clear at ONE p*. Dual-flow removes arrival-time privilege per side independently (Jump Crypto DFBA, Aug 2025). CrossBar runs this inside the MagicBlock ER — the novelty is execution substrate, not the DFBA idea." style="whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="240" y="380" width="730" height="50" as="geometry"/></mxCell>
+
+        <mxCell id="e0" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="in" target="mk"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e1" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="in" target="tk"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="mk" target="cm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="tk" target="ct"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="cm" target="agg"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="ct" target="agg"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="1" source="agg" target="p"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

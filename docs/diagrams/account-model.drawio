@@ -1,0 +1,35 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="account-model" id="accounts">
+    <mxGraphModel dx="1200" dy="750" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1140" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="On-chain account model — PDAs and instruction planes" style="text;html=1;align=center;fontSize=16;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="260" y="10" width="620" height="28" as="geometry"/></mxCell>
+
+        <mxCell id="m" value="Market PDA&#10;config · status · crank_authority&#10;window · CFMM reserves" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="460" y="60" width="200" height="80" as="geometry"/></mxCell>
+
+        <mxCell id="bb" value="BatchBook PDA&#10;order slab (forming window)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="80" y="200" width="160" height="70" as="geometry"/></mxCell>
+        <mxCell id="br" value="BatchResult PDA&#10;p*, volume, fills[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="280" y="200" width="160" height="70" as="geometry"/></mxCell>
+        <mxCell id="oo" value="OpenOrders PDA&#10;(per trader)&#10;reserved · claimable · cursor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="480" y="200" width="160" height="70" as="geometry"/></mxCell>
+        <mxCell id="bv" value="base_vault PDA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dce8f5;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="700" y="180" width="120" height="50" as="geometry"/></mxCell>
+        <mxCell id="qv" value="quote_vault PDA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dce8f5;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="1"><mxGeometry x="700" y="250" width="120" height="50" as="geometry"/></mxCell>
+        <mxCell id="or" value="OraclePrice PDA&#10;Pyth Lazer ref + band" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#b3261e;fontSize=10;" vertex="1" parent="1"><mxGeometry x="880" y="200" width="150" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="erl" value="Delegated to ER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=11;dashed=1;" vertex="1" parent="1"><mxGeometry x="60" y="320" width="980" height="50" as="geometry"/></mxCell>
+        <mxCell id="erix" value="submit_order · cancel_order · run_batch · schedule_batch · commit · undelegate_*" style="text;html=1;fontSize=10;fontColor=#7a3fb5;" vertex="1" parent="1"><mxGeometry x="80" y="330" width="500" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="l1l" value="Canonical on L1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f8ff;strokeColor=#4a6fa5;fontSize=11;dashed=1;" vertex="1" parent="1"><mxGeometry x="60" y="400" width="980" height="50" as="geometry"/></mxCell>
+        <mxCell id="l1ix" value="init_market · deposit · withdraw · settle · finalize_settlement · force_undelegate" style="text;html=1;fontSize=10;fontColor=#4a6fa5;" vertex="1" parent="1"><mxGeometry x="80" y="410" width="520" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="note" value="Escrow is an internal ledger on OpenOrders during ER clearing; SPL token movement happens at deposit/withdraw (L1) and settle (L1). See TECHNICALDESIGN.md §4–6." style="whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="60" y="480" width="980" height="36" as="geometry"/></mxCell>
+
+        <mxCell id="em" style="endArrow=open;html=1;strokeColor=#c9a227;dashed=1;" edge="1" parent="1" source="m" target="bb"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="em2" style="endArrow=open;html=1;strokeColor=#c9a227;dashed=1;" edge="1" parent="1" source="m" target="br"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="em3" style="endArrow=open;html=1;strokeColor=#c9a227;dashed=1;" edge="1" parent="1" source="m" target="oo"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="em4" style="endArrow=open;html=1;strokeColor=#c9a227;dashed=1;" edge="1" parent="1" source="m" target="bv"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="em5" style="endArrow=open;html=1;strokeColor=#c9a227;dashed=1;" edge="1" parent="1" source="m" target="qv"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="em6" style="endArrow=open;html=1;strokeColor=#c9a227;dashed=1;" edge="1" parent="1" source="m" target="or"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

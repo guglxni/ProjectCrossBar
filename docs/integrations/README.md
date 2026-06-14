@@ -26,8 +26,9 @@ already operates in.
 ## Settlement lifecycle
 
 Clearing happens inside the ER; token reconciliation happens on L1 after
-undelegation (`undelegate_open_orders` → `settle` per trader). The full path is
-automated in [`tests/crank-demo.ts`](../../tests/crank-demo.ts).
+undelegation (`undelegate_open_orders` → `settle` per trader). See
+[`settlement.png`](../diagrams/settlement.png). The full path is automated in
+[`tests/crank-demo.ts`](../../tests/crank-demo.ts).
 
 ## Supporting code in this repo
 

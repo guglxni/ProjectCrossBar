@@ -23,9 +23,13 @@ The novelty is the **execution layer**, not the auction idea. Three accelerator 
 
 ### Lifecycle
 
-The full path is verified end-to-end on devnet — the auction clears *inside* the rollup, then undelegates to L1.
+The full path is verified end-to-end on devnet — the auction clears *inside* the rollup, then undelegates and settles on L1.
 
 ![Market lifecycle](docs/diagrams/lifecycle.png)
+
+![Settlement — ER clear then L1 reconcile](docs/diagrams/settlement.png)
+
+See [`MATH.md`](MATH.md) for the auction mathematics (LaTeX) and [`TECHNICALDESIGN.md`](TECHNICALDESIGN.md) for the account model diagram.
 
 ### Clearing pipeline
 
@@ -119,8 +123,9 @@ npx tsx tests/crank-demo.ts                     # automatic crank
 
 ```
 README.md              overview, diagrams, verification
-MATH.md                clearing price, dual-flow, verified-matcher oracle, research §8
-TECHNICALDESIGN.md     modules, instructions, PDAs, crank, oracle band, errors
+MATH.md                clearing price (LaTeX), dual-flow, verified-matcher oracle
+TECHNICALDESIGN.md     modules, instructions, PDAs, crank, oracle band, account diagrams
+docs/diagrams/         draw.io sources + PNGs (`./scripts/render-diagrams.sh`)
 SECURITY.md            vulnerability reporting policy
 CONTRIBUTING.md        development setup and PR guidelines
 

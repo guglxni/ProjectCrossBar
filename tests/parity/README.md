@@ -1,7 +1,9 @@
 # Differential parity test
 
+![Certified parity harness](docs/diagrams/oracle-parity.png)
+
 The matcher's correctness is defined by parity with the verified oracle
-(`MATH.md` section 6, `REQUIREMENTS.md` F12). This directory holds the harness.
+(`MATH.md` §6). This directory holds the harness.
 
 ## Layer 1 (runs today, no extra toolchain)
 

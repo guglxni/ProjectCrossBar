@@ -1,26 +1,50 @@
 # Diagrams
 
-Curated [draw.io](https://www.drawio.com/) sources for the figures embedded in the root `README.md`. The `.drawio` files are the editable source of truth; the `.png` files are 2× rasters generated from them for crisp GitHub rendering.
+Curated [draw.io](https://www.drawio.com/) sources for figures embedded across the repository. The `.drawio` files are the editable source of truth; `.png` files are 2× rasters for crisp GitHub rendering.
 
-| Source | Rendered | Shows |
-| --- | --- | --- |
-| `architecture.drawio` | `architecture.png` | Two-plane model: Solana L1 custody/settlement ↔ MagicBlock ER execution |
-| `lifecycle.drawio` | `lifecycle.png` | End-to-end market lifecycle (L1 → ER → L1), verified on devnet |
-| `clearing.drawio` | `clearing.png` | `run_batch` internals: window gate → curves → uniform `p*` → fills |
-| `flash-integration.drawio` | `flash-integration.png` | Flash Trade composition: CrossBar spot + Flash perp on one MagicBlock ER (see [`../integrations/FLASH_TRADE.md`](../integrations/FLASH_TRADE.md)) |
-| `per-privacy.drawio` | `per-privacy.png` | Private Ephemeral Rollup: public vs TEE-private clearing state (see [`../integrations/PRIVATE_PAYMENTS.md`](../integrations/PRIVATE_PAYMENTS.md)) |
-| `flash-features.drawio` | `flash-features.png` | Comprehensive Flash integration: surfaces → integration layer → build-on-Flash features (see [`../integrations/FLASH_TRADE_FEATURES.md`](../integrations/FLASH_TRADE_FEATURES.md)) |
+## Architecture & lifecycle
 
-## Re-render
+| Source | Rendered | Used in | Shows |
+| --- | --- | --- | --- |
+| `architecture.drawio` | `architecture.png` | `README.md` | Two-plane model: Solana L1 ↔ MagicBlock ER |
+| `lifecycle.drawio` | `lifecycle.png` | `README.md` | End-to-end market lifecycle (L1 → ER → L1) |
+| `account-model.drawio` | `account-model.png` | `TECHNICALDESIGN.md` | PDA layout and instruction planes |
+| `settlement.drawio` | `settlement.png` | `MATH.md`, `TECHNICALDESIGN.md`, integrations | ER clear → undelegate → L1 settle keeper |
 
-PNGs are generated from the `.drawio` sources with the draw.io desktop CLI at 2× scale:
+## Clearing & math
+
+| Source | Rendered | Used in | Shows |
+| --- | --- | --- | --- |
+| `clearing.drawio` | `clearing.png` | `README.md`, `MATH.md` | `run_batch` pipeline (N1, oracle band, parity) |
+| `math-curves.drawio` | `math-curves.png` | `MATH.md` | Demand/supply step curves and uniform $p^*$ |
+| `dual-flow.drawio` | `dual-flow.png` | `MATH.md` | DFBA: maker/taker flows → single $p^*$ |
+| `oracle-parity.drawio` | `oracle-parity.png` | `MATH.md`, `tests/parity/README.md` | Engine vs Coq-extracted UM (4006/4006) |
+
+## Integrations
+
+| Source | Rendered | Used in | Shows |
+| --- | --- | --- | --- |
+| `flash-integration.drawio` | `flash-integration.png` | `docs/integrations/FLASH_TRADE.md` | CrossBar spot + Flash perp on one ER |
+| `per-privacy.drawio` | `per-privacy.png` | `docs/integrations/PRIVATE_PAYMENTS.md` | Public vs TEE-private clearing state |
+| `flash-features.drawio` | `flash-features.png` | `clients/flash/README.md` | Flash client surfaces and composition |
+
+## Re-render all PNGs
+
+Requires the draw.io desktop CLI (`brew install --cask drawio`):
 
 ```bash
-for d in architecture lifecycle clearing flash-integration per-privacy flash-features; do
-  drawio -x -f png -s 2 --no-sandbox -o "$d.png" "$d.drawio"
+./scripts/render-diagrams.sh
+```
+
+Or manually from this directory:
+
+```bash
+for d in *.drawio; do
+  base="${d%.drawio}"
+  drawio -x -f png -s 2 --no-sandbox -o "${base}.png" "$d"
 done
 ```
 
-Edit the `.drawio` files in the draw.io desktop app (or [app.diagrams.net](https://app.diagrams.net)) and re-run the command above to refresh the PNGs.
+Edit `.drawio` files in the draw.io desktop app or [app.diagrams.net](https://app.diagrams.net), then re-run the script.
 
-> PNG is used rather than SVG because draw.io's headless export rasterizes HTML (`html=1`) text labels into embedded bitmaps inside the SVG anyway — a direct 2× PNG is smaller and renders identically.
+> PNG is used rather than SVG because draw.io's headless export rasterizes HTML (`html=1`) text labels into embedded bitmaps inside SVG — a direct 2× PNG is smaller and renders identically on GitHub.

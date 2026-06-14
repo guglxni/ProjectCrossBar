@@ -1,0 +1,43 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="settlement" id="settle">
+    <mxGraphModel dx="1200" dy="700" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1160" pageHeight="540" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="Settlement lifecycle — clear in ER, reconcile on L1 (two-step pattern)" style="text;html=1;align=center;fontSize=16;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1"><mxGeometry x="200" y="12" width="760" height="28" as="geometry"/></mxCell>
+
+        <!-- ER lane -->
+        <mxCell id="erl" value="MagicBlock Ephemeral Rollup" style="swimlane;horizontal=0;startSize=28;fillColor=#ede0fb;strokeColor=#7a3fb5;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="60" width="1080" height="200" as="geometry"/></mxCell>
+        <mxCell id="e1" value="submit_order&#10;(escrow ledger)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="erl"><mxGeometry x="30" y="80" width="110" height="60" as="geometry"/></mxCell>
+        <mxCell id="e2" value="schedule_batch&#10;(ScheduleTask crank)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="erl"><mxGeometry x="170" y="80" width="120" height="60" as="geometry"/></mxCell>
+        <mxCell id="e3" value="run_batch&#10;p*, fills → BatchResult" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcc6f5;strokeColor=#7a3fb5;fontSize=10;fontStyle=1;" vertex="1" parent="erl"><mxGeometry x="330" y="75" width="140" height="70" as="geometry"/></mxCell>
+        <mxCell id="e4" value="undelegate_market" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="erl"><mxGeometry x="510" y="80" width="120" height="60" as="geometry"/></mxCell>
+        <mxCell id="e5" value="undelegate_open_orders&#10;(per trader)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4fc;strokeColor=#7a3fb5;fontSize=10;" vertex="1" parent="erl"><mxGeometry x="670" y="80" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="e6" value="commit seals&#10;state to L1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#c9a227;fontSize=10;" vertex="1" parent="erl"><mxGeometry x="850" y="80" width="110" height="60" as="geometry"/></mxCell>
+
+        <!-- L1 lane -->
+        <mxCell id="l1l" value="Solana L1 (custody &amp; settlement)" style="swimlane;horizontal=0;startSize=28;fillColor=#e8f0fe;strokeColor=#4a6fa5;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="290" width="1080" height="200" as="geometry"/></mxCell>
+        <mxCell id="l1" value="vaults + BatchResult&#10;(canonical custody)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f8ff;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="l1l"><mxGeometry x="30" y="70" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="l2" value="settle(trader)&#10;credit fills at p*,&#10;refund unspent escrow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dce8f5;strokeColor=#4a6fa5;fontSize=10;fontStyle=1;" vertex="1" parent="l1l"><mxGeometry x="220" y="65" width="160" height="70" as="geometry"/></mxCell>
+        <mxCell id="l3" value="finalize_settlement&#10;market → OnBase" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f8ff;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="l1l"><mxGeometry x="430" y="70" width="150" height="60" as="geometry"/></mxCell>
+        <mxCell id="l4" value="withdraw&#10;(SPL to user ATA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f8ff;strokeColor=#4a6fa5;fontSize=10;" vertex="1" parent="l1l"><mxGeometry x="620" y="70" width="120" height="60" as="geometry"/></mxCell>
+        <mxCell id="k" value="settle keeper&#10;(crank-demo / Hydra / Kora)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#38763d;fontSize=10;dashed=1;" vertex="1" parent="l1l"><mxGeometry x="780" y="65" width="160" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="down" value="" style="endArrow=block;html=1;strokeColor=#7a3fb5;strokeWidth=2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="600" y="260" as="sourcePoint"/><mxPoint x="300" y="290" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="downl" value="undelegation commit" style="text;html=1;fontSize=10;fontColor=#7a3fb5;" vertex="1" parent="1"><mxGeometry x="560" y="248" width="120" height="20" as="geometry"/></mxCell>
+
+        <mxCell id="note" value="Magic Actions cannot atomically settle the same OpenOrders being undelegated (proven on devnet ER). The deliberate two-step pattern matches every official MagicBlock example (e.g. rock-paper-scissor: undelegate_all → claim_pot)." style="whiteSpace=wrap;html=1;fillColor=#fff8e6;strokeColor=#c9a227;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="40" y="500" width="1080" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="ee1" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="erl" source="e1" target="e2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ee2" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="erl" source="e2" target="e3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ee3" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="erl" source="e3" target="e4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ee4" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="erl" source="e4" target="e5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ee5" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="erl" source="e5" target="e6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ll1" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="l1l" source="l1" target="l2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ll2" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="l1l" source="l2" target="l3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ll3" style="endArrow=block;html=1;strokeColor=#555;" edge="1" parent="l1l" source="l3" target="l4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="lk" style="endArrow=open;html=1;strokeColor=#38763d;dashed=1;" edge="1" parent="1" source="k" target="l2"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

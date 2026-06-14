@@ -18,6 +18,12 @@ cargo build-sbf --tools-version v1.53
 
 See [`README.md`](README.md) for devnet demos and toolchain notes.
 
+After editing diagrams in `docs/diagrams/*.drawio`, re-render PNGs:
+
+```bash
+./scripts/render-diagrams.sh
+```
+
 ## Pull requests
 
 1. Fork the repository and create a feature branch from `main`.

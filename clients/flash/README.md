@@ -8,10 +8,9 @@ delta-hedged with a Flash perp, both priced off the same Pyth Lazer reference.
 
 ## Source of truth
 
-**`.agents/skills/flash-trade/`** is the authoritative, vendored API spec —
-`ApiReference.md`, `TransactionFlow.md`, `SKILL.md`. Every endpoint, field name,
-and enum in `client.ts` is copied from there. Per the CrossBar honesty contract
-(`CLAUDE.md`), nothing is invented: if it is not in that skill, it is not here.
+Public Flash Trade API documentation and the [`flash-trade/examples-v2`](https://github.com/flash-trade/examples-v2) reference client. Every endpoint, field name, and enum in `client.ts` is copied from verified public sources.
+
+![Flash integration surfaces](../diagrams/flash-features.png)
 
 ## What it is
 
