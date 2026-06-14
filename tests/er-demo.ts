@@ -34,6 +34,23 @@ const T = Number(process.env.THROTTLE_MS || 700);
 // Default MagicBlock devnet validator identity (from the anchor-counter example).
 const VALIDATOR = new PublicKey(process.env.VALIDATOR || "MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57");
 
+// Poll until `pubkey` is owned by `owner` on L1.  Needed because BatchResult
+// can land before the delegation program releases the market/OO accounts.
+async function waitForOwner(
+  conn: anchor.web3.Connection,
+  pubkey: PublicKey,
+  owner: PublicKey,
+  label: string,
+  attempts = 25,
+) {
+  for (let i = 0; i < attempts; i++) {
+    const info = await conn.getAccountInfo(pubkey);
+    if (info?.owner.equals(owner)) return;
+    await sleep(3000);
+  }
+  throw new Error(`${label} did not return to ${owner.toBase58()} on L1`);
+}
+
 async function main() {
   const idl = JSON.parse(fs.readFileSync(__dirname + "/../target/idl/crossbar.json", "utf8"));
   const base = anchor.AnchorProvider.env();
@@ -160,6 +177,12 @@ async function main() {
   }
   console.log(`\nON L1: BatchResult from the ER clear -> p*=${res.clearingPrice.toNumber()/PRICE_SCALE} volume=${res.matchedVolume} fills=${res.nFills} status=${res.status}`);
   if (res.status !== 0 || res.clearingPrice.toNumber() <= 0) throw new Error("expected a cleared single-price BatchResult on L1");
+
+  // Wait for the delegation program to hand ownership back to CrossBar before
+  // settle runs — BatchResult arrives on L1 before account ownership flips.
+  await waitForOwner(conn, market, PROGRAM_ID, "market");
+  for (const t of traders)
+    await waitForOwner(conn, oo(t.publicKey), PROGRAM_ID, `open_orders(${t.publicKey.toBase58().slice(0, 8)})`);
 
   for (const t of traders) {
     await program.methods.settle().accountsPartial({

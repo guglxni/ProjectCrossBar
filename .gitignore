@@ -40,6 +40,7 @@ scratchpad.md
 # Internal audits, investigations, and research notes
 docs/SECURITY_AUDIT.md
 docs/N1_INVESTIGATION.md
+docs/FRONTEND_PROMPT.md
 docs/integrations/MAGIC_ACTIONS.md
 docs/integrations/FLASH_TRADE_FEATURES.md
 
@@ -51,3 +52,8 @@ skills-lock.json
 .cursorindexingignore
 .specstory/
 graphify-out/
+
+# Web app
+web/node_modules/
+web/dist/
+web/.env

@@ -81,8 +81,8 @@ The correctness definition is **parity with a machine-checked oracle**: the matc
 | CFMM: parity preserved at zero reserves, k non-decreasing | `clearing/tests/cfmm.rs` | — |
 | Full ER round-trip (live MagicBlock ER) | `tests/er-demo.ts` — delegate → clear at `p*` → undelegate → settle | novelty |
 | Automatic crank + settle keeper (live ER) | `tests/crank-demo.ts` — ScheduleTask + L1 settle loop | — |
-| Scenario A: one uniform price | `tests/demo-devnet.ts` — `p*=100`, vol 200, 4 fills, ~8k CU | F5, N4 |
-| Scenario B: sandwich nets zero | `tests/demo-devnet.ts` — attacker brackets victim at same `p*` | MEV (MATH §7) |
+| Scenario A: one uniform price | `tests/demo-devnet.ts` (local) or `tests/er-scenarios.ts` (ER) — `p*=100`, vol 200, 4 fills, ~8k CU | F5, N4 |
+| Scenario B: sandwich nets zero | `tests/demo-devnet.ts` (local) or `tests/er-scenarios.ts` (ER) — attacker brackets victim at same `p*` | MEV (MATH §7) |
 
 ### Devnet deployment
 
@@ -117,13 +117,14 @@ solana program show CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd --url devnet
 | Demo | Substrate | Status |
 | --- | --- | --- |
 | [`tests/er-demo.ts`](tests/er-demo.ts) | Live devnet MagicBlock ER | **Passes** — full delegate → submit → clear → undelegate → settle |
+| [`tests/er-scenarios.ts`](tests/er-scenarios.ts) | Live devnet MagicBlock ER | **Passes** — scenarios A/B (uniform `p*`, sandwich) through full ER lifecycle |
 | [`tests/crank-demo.ts`](tests/crank-demo.ts) | Live devnet ER + L1 | **Passes** — ScheduleTask crank, then settle keeper (polls L1, settles each trader, finalizes) |
-| [`tests/demo-devnet.ts`](tests/demo-devnet.ts) | Local validator (no ER) | **Passes** — scenarios A/B: clearing math, oracle band, post-audit guards |
+| [`tests/demo-devnet.ts`](tests/demo-devnet.ts) | Local validator (L1 shortcut) | **Passes** — fast regression: clearing math, oracle band, post-audit guards |
 
-> **Honest gap:** `demo-devnet.ts` exercises the on-chain clearing path on a **local
-> validator** — it does not delegate to the real ER. ER-specific delegation, crank, and
-> settlement are covered by `er-demo.ts` and `crank-demo.ts`, both validated against
-> `https://devnet.magicblock.app`.
+> **Validation tiers:** `demo-devnet.ts` is the fast local regression (same matcher
+> bytecode, no ER delegation). `er-demo.ts` proves the minimal ER round-trip.
+> `er-scenarios.ts` runs the headline A/B demos inside the real ER. `crank-demo.ts`
+> adds automatic clearing + the settle keeper.
 
 ---
 
@@ -144,10 +145,16 @@ cargo check -p crossbar                   # type-checks against real APIs
 export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
 export ANCHOR_WALLET=~/.config/solana/id.json
 export EPHEMERAL_PROVIDER_ENDPOINT=https://devnet.magicblock.app/
-THROTTLE_MS=900 npx tsx tests/demo-devnet.ts   # scenarios A + B (local validator)
+THROTTLE_MS=900 ./scripts/run-demo-local.sh              # scenarios A + B (local validator, fast)
+npx tsx tests/er-scenarios.ts                   # scenarios A + B (live devnet ER)
 npx tsx tests/er-demo.ts                        # full ER round-trip (live devnet ER)
 npx tsx tests/crank-demo.ts                     # crank + settle keeper (live devnet ER)
+
+# 5. Web dashboard (hero + live devnet panels)
+cd web && cp .env.example .env && npm install && npm run dev
 ```
+
+See [`web/README.md`](web/README.md) and [`web/UI_KIT.md`](web/UI_KIT.md) for the React SPA, dual RPC wiring, and design tokens.
 
 > **Toolchain note.** Build the program with platform-tools **v1.53**. v1.51 is too old for the `edition2024` dep tree; v1.54 builds but faults at runtime on Anchor account deserialize. `cargo clean` deletes the program keypair in `target/deploy/` — restore it from `keys/`.
 
@@ -171,6 +178,7 @@ docs/diagrams/         drawio sources + rendered PNGs
 docs/integrations/     Flash Trade + Private Payments integration designs
 clients/flash/         typed Flash Trade REST client
 kora/                  gasless paymaster config (secrets gitignored)
+web/                   React + Vite SPA (hero + devnet dashboard)
 ```
 
 See [`TECHNICALDESIGN.md`](TECHNICALDESIGN.md) for the full on-chain instruction surface and account model.

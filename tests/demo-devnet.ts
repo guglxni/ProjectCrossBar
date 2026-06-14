@@ -1,19 +1,19 @@
 /**
- * Project CrossBar end-to-end auction demo, ON DEVNET (standalone, run with
- * `npx tsx`). Proves the auction behavior of the live deployed program:
+ * Scenarios A and B on a LOCAL validator or devnet L1 via the `set_delegated`
+ * shortcut (no MagicBlock delegation). Fast regression for clearing math,
+ * oracle band, post-audit guards, and run_batch CU (PLAN.md T2.8).
+ *
  *   A. Many orders in one window all clear at ONE uniform price p*.
  *   B. A sandwich bracketing a victim in the same window fills at the same p*,
  *      capturing nothing.
- * plus a run_batch compute-unit measurement (PLAN.md T2.8) and per-trader
- * settlement.
  *
- * This runs the clearing on devnet L1 directly (status flipped via
- * set_delegated so run_batch's guard passes). The matcher compute is identical
- * to running inside the Ephemeral Rollup; the ER is about WHERE sequencing
- * happens (the architectural novelty), not the auction arithmetic. The full
- * delegate->ER->undelegate path is exercised by `anchor test` against
- * https://devnet.magicblock.app once the ER session is wired (see STATUS.md).
+ * For the same scenarios through the real ER, use `tests/er-scenarios.ts`.
+ * For a minimal ER round-trip (2 traders), use `tests/er-demo.ts`.
  *
+ * Local (free, recommended for CI):
+ *   ./scripts/run-demo-local.sh
+ *
+ * Devnet L1 direct:
  *   ANCHOR_PROVIDER_URL=https://api.devnet.solana.com \
  *   ANCHOR_WALLET=$HOME/.config/solana/id.json \
  *   npx tsx tests/demo-devnet.ts

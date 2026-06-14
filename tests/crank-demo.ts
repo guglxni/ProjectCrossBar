@@ -28,6 +28,21 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const T = Number(process.env.THROTTLE_MS || 700);
 const VALIDATOR = new PublicKey(process.env.VALIDATOR || "MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57");
 
+async function waitForOwner(
+  conn: anchor.web3.Connection,
+  pubkey: PublicKey,
+  owner: PublicKey,
+  label: string,
+  attempts = 25,
+) {
+  for (let i = 0; i < attempts; i++) {
+    const info = await conn.getAccountInfo(pubkey);
+    if (info?.owner.equals(owner)) return;
+    await sleep(3000);
+  }
+  throw new Error(`${label} did not return to ${owner.toBase58()} on L1`);
+}
+
 async function main() {
   const idl = JSON.parse(fs.readFileSync(__dirname + "/../target/idl/crossbar.json", "utf8"));
   const base = anchor.AnchorProvider.env();
@@ -145,6 +160,11 @@ async function main() {
     await sleep(3000);
   }
   if (!onL1 || onL1.status !== 0) throw new Error("cleared BatchResult did not land on L1");
+
+  // Wait for the delegation program to release account ownership before settle.
+  await waitForOwner(conn, market, PID, "market");
+  for (const t of traders)
+    await waitForOwner(conn, oo(t.publicKey), PID, `open_orders(${t.publicKey.toBase58().slice(0, 8)})`);
 
   // The keeper: settle each trader on L1 (one-shot per trader via the C1 cursor),
   // then finalize. Tip: point a Kora paymaster at these txs for gasless keeper

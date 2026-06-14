@@ -203,6 +203,6 @@ Current live program (see [`README.md` § Devnet deployment](README.md#devnet-de
 | Programdata rent | `4.82` SOL |
 | ER endpoint | `https://devnet.magicblock.app` |
 
-**Validated on the live ER:** `tests/er-demo.ts`, `tests/crank-demo.ts` (includes settle keeper).
+**Validated on the live ER:** `tests/er-demo.ts`, `tests/er-scenarios.ts` (A/B), `tests/crank-demo.ts` (includes settle keeper).
 
-**Local-validator only:** `tests/demo-devnet.ts` (scenarios A/B — clearing math and guards, no delegation path).
+**Local-validator only:** `tests/demo-devnet.ts` (scenarios A/B — L1 shortcut, fast regression).
