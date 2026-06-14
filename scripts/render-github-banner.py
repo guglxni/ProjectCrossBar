@@ -20,6 +20,28 @@ LIGHT = (245, 245, 245)
 GRID = (235, 235, 235)
 
 
+def fit_logo(logo: Image.Image, max_w: int, max_h: int) -> Image.Image:
+    """Scale logo down preserving its native aspect ratio (logo.png is 3:2)."""
+    copy = logo.copy()
+    copy.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+    return copy
+
+
+def paste_logo_centered(
+    canvas: Image.Image,
+    logo: Image.Image,
+    box_x: int,
+    box_y: int,
+    box_w: int,
+    box_h: int,
+) -> None:
+    """Place aspect-correct logo in a layout box, centered."""
+    fitted = fit_logo(logo, box_w, box_h)
+    x = box_x + (box_w - fitted.width) // 2
+    y = box_y + (box_h - fitted.height) // 2
+    canvas.paste(fitted, (x, y), fitted)
+
+
 def load_font(candidates: list[str], size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     for path in candidates:
         if Path(path).exists():
@@ -68,11 +90,8 @@ def main() -> None:
     draw.rectangle([0, 0, 520, H], fill=LIGHT)
 
     logo = Image.open(LOGO_PATH).convert("RGBA")
-    logo_size = 300
-    logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
-    logo_x = 110
-    logo_y = (H - logo_size) // 2
-    img.paste(logo, (logo_x, logo_y), logo)
+    # logo.png is 1536×1024 (3:2) — never force a square resize
+    paste_logo_centered(img, logo, box_x=48, box_y=80, box_w=420, box_h=480)
 
     # Purple rule between logo and copy
     draw.rectangle([500, 120, 506, H - 120], fill=PURPLE)
