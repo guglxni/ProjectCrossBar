@@ -1,5 +1,10 @@
 # Project CrossBar
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/github-banner.png">
+  <img src="docs/github-banner.png" alt="Project CrossBar — Beyond the slot, one price for every window" width="100%">
+</picture>
+
 > A frequent batch auction (FBA) DEX whose order matching and uniform-price clearing run **inside a MagicBlock Ephemeral Rollup**, then settle atomically to Solana L1.
 
 [![clearing tests](https://img.shields.io/badge/clearing%20tests-49%20passing-2ea043)](clearing/)
