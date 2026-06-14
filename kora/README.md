@@ -39,12 +39,18 @@ kora --config kora/kora.toml config validate --signers-config kora/signers.toml
 # 1. fund the fee payer on devnet
 solana airdrop 2 $(solana-keygen pubkey kora/fee-payer.json) --url devnet
 
-# 2. start the Kora RPC relayer
+# 2. start locally
 set -a; source kora/.env; set +a
 kora --rpc-url https://api.devnet.solana.com \
      --config kora/kora.toml \
      rpc start --signers-config kora/signers.toml
 ```
+
+## Heroku (hosted relayer for Vercel dashboard)
+
+See [HEROKU.md](./HEROKU.md). App: `crossbar-kora-devnet` at
+`https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com`. Kora sends
+`access-control-allow-origin: *`, so browser gasless submit works from the static frontend.
 
 ## Gasless submit flow (client side)
 

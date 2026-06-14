@@ -1,5 +1,7 @@
 # Project CrossBar Web App
 
+**Live:** [https://project-crossbar.vercel.app](https://project-crossbar.vercel.app)
+
 React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui single-page app: cinematic marketing hero and live devnet trading dashboard.
 
 ## Quickstart
@@ -32,15 +34,16 @@ Open http://localhost:5173/docs for protocol documentation.
 | `VITE_ER_RPC` | MagicBlock devnet ER | Ephemeral rollup RPC |
 | `VITE_PROGRAM_ID` | deployed program | CrossBar program |
 | `VITE_MARKET_PUBKEY` | empty | Existing market (or use config bar) |
-| `VITE_KORA_RPC` | localhost:8080 | Optional gasless relayer |
-| `VITE_FLASH_MOCK` | `1` | Mock hedge preview (Flash is mainnet read-only) |
+| `VITE_KORA_RPC` | `https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com` | Kora gasless relayer (Heroku) |
+| `VITE_KORA_FEE_PAYER` | fee payer pubkey | Required for gasless feePayer in txs |
+| `VITE_FLASH_MOCK` | `0` (hosted) | `1` = offline sample Flash data in dashboard |
 
 ## Architecture
 
 - **Dual RPC:** `useCrossbarProgram` mirrors `tests/er-demo.ts` (base + ER Anchor providers).
 - **Polling:** `useMarketPolling` reads Market, BatchBook, BatchResult, OpenOrders, Oracle every 2s.
 - **Integer math:** prices use `PRICE_SCALE = 1_000_000` until UI format boundary.
-- **Honesty labels:** devnet live, mainnet read-only (Flash), mock (hedge preview). Magic Actions settlement is not implemented (reverted on devnet ER).
+- **Kora:** hosted relayer at `https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com` for gasless submit.
 
 ## UI kit
 
