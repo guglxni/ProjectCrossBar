@@ -21,6 +21,14 @@ Continuous order books on Solana leak value to whoever lands first in a slot. Pr
 
 ---
 
+## Project walkthrough
+
+![Project CrossBar — product walkthrough (1 min)](docs/project-walkthrough.gif)
+
+One-minute overview: uniform-price batch clearing inside a MagicBlock Ephemeral Rollup, the sandwich-resistance property, and devnet verification.
+
+---
+
 ## Architecture
 
 Two planes. Custody and settlement are canonical on Solana L1; matching and clearing execute in the ephemeral rollup and commit back.

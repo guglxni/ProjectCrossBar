@@ -131,11 +131,11 @@ The TIFR group has machine-checked auction matchers in Coq with extraction to OC
 For each batch fixture $B$:
 
 $$
-\text{on\_chain}(B) = \text{fills from } \texttt{run\_batch}(B) \text{ read from BatchResult}
+f_{\mathrm{chain}}(B) = \text{fills from batch } B \text{ as written to BatchResult}
 $$
 
 $$
-\text{oracle}(B) = \text{fills from extracted verified matcher on } B
+f_{\mathrm{oracle}}(B) = \text{fills from the extracted verified matcher on } B
 $$
 
 **Assert:**
@@ -185,7 +185,7 @@ Implementation: `ClearingRule::Auction(Option<p_ref>)`, `clear::auction_clearing
 
 Source: Mastrolia & Xu, [arXiv:2405.09764](https://arxiv.org/abs/2405.09764). With a fixed, predictable close, a strategic trader's optimal arrival is the last instant ("bang the close"); randomizing the close flips that optimum. In their Bernoulli $\{9,10\}$ model, an $\approx 8\%$ chance of closing one tick early already moves the optimum off the last instant.
 
-CrossBar randomizes the close by counting crank ticks per window and closing after a VRF-derived target drawn uniformly from $[\texttt{window\_min\_ticks}, \texttt{window\_max\_ticks}]$. Implementation: `clearing/src/window.rs`, `request_window_vrf` / `consume_window_vrf`.
+CrossBar randomizes the close by counting crank ticks per window and closing after a VRF-derived target drawn uniformly from `[window_min_ticks, window_max_ticks]`. Implementation: `clearing/src/window.rs`, `request_window_vrf` / `consume_window_vrf`.
 
 **N1 preserved:** the gate is window *formation* (which orders fall in a batch) — it reads only an instruction counter and the VRF target, never clock, slot, or arrival order.
 
@@ -196,7 +196,7 @@ Wendy (Kursawe, [arXiv:2007.08303](https://arxiv.org/abs/2007.08303)) and Libra 
 An FBA removes that dependency. Formally, for any permutation $\pi$ of batch $B$:
 
 $$
-\text{run\_batch}(B) = \text{run\_batch}(\pi(B))
+\operatorname{runBatch}(B) = \operatorname{runBatch}(\pi(B))
 $$
 
 identical $p^*$, $V$, and per-order fills. This is **stronger** than Libra's bounded-but-nonzero or Wendy's block-relative fairness.
@@ -210,8 +210,10 @@ Source: Ramseyer, Goyal, Goel & Mazières, EC'24 ([arXiv:2210.04929](https://arx
 CrossBar discretizes a constant-product pool ($x \cdot y = k$) into synthetic maker limit orders (a "ladder") and hands them to the unchanged matcher (`clearing/src/cfmm.rs`). The new numeric primitive is integer square root:
 
 $$
-x(p) = \left\lfloor \sqrt{\frac{k \cdot \text{PRICE\_SCALE}}{p}} \right\rfloor
+x(p) = \left\lfloor \sqrt{\frac{k \cdot s}{p}} \right\rfloor
 $$
+
+where $s$ is the price scale constant (`PRICE_SCALE = 10^6`).
 
 **Verifiability** (`clearing/tests/cfmm.rs`):
 
