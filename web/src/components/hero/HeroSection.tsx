@@ -1,4 +1,7 @@
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   BATCH_STATUS_LABELS,
   PARITY_PASSED,
@@ -7,19 +10,16 @@ import {
 } from "@/lib/constants";
 import { explorerAccountLink } from "@/lib/format";
 import type { MarketPollState } from "@/hooks/useMarketPolling";
-import { HeroNav } from "./HeroNav";
 import { HeroVideo } from "./HeroVideo";
 
 interface HeroSectionProps {
   poll: Pick<MarketPollState, "market" | "batchResult" | "loading">;
 }
 
-function lastBatchLabel(
-  batchResult: MarketPollState["batchResult"],
-): string {
-  if (!batchResult) return "No market";
+function lastBatchLabel(batchResult: MarketPollState["batchResult"]): string {
+  if (!batchResult) return "Ready";
   const status = Number(batchResult.status ?? -1);
-  return BATCH_STATUS_LABELS[status] ?? `Status ${status}`;
+  return BATCH_STATUS_LABELS[status] ?? "Ready";
 }
 
 function tickLabel(market: MarketPollState["market"]): string {
@@ -33,18 +33,18 @@ function tickLabel(market: MarketPollState["market"]): string {
 }
 
 export function HeroSection({ poll }: HeroSectionProps) {
-  const scrollDashboard = () =>
-    document.querySelector("#dashboard")?.scrollIntoView({ behavior: "smooth" });
-
   return (
-    <section className="relative min-h-[90vh] overflow-hidden">
+    <section className="relative overflow-hidden">
       <HeroVideo />
-      <HeroNav />
       <div
         className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 text-center"
-        style={{ paddingTop: "calc(8rem - 75px)", paddingBottom: "10rem" }}
+        style={{ paddingTop: "calc(6rem - 24px)", paddingBottom: "8rem" }}
       >
-        <h1 className="animate-fade-rise font-display text-5xl leading-[0.95] tracking-[-2.46px] text-foreground sm:text-7xl md:text-8xl">
+        <span className="animate-fade-rise inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
+          Live on Solana devnet · MagicBlock Ephemeral Rollup
+        </span>
+        <h1 className="animate-fade-rise mt-6 font-display text-5xl leading-[0.95] tracking-[-2.46px] text-foreground sm:text-7xl md:text-8xl">
           Beyond the slot,{" "}
           <em className="text-muted-foreground not-italic">one price</em> for{" "}
           <em className="text-muted-foreground not-italic">every window</em>.
@@ -55,13 +55,26 @@ export function HeroSection({ poll }: HeroSectionProps) {
           settle atomically to L1. No intra-batch time priority. Competition
           moves to price.
         </p>
-        <button
-          type="button"
-          onClick={scrollDashboard}
-          className="animate-fade-rise-delay-2 mt-12 rounded-full bg-primary px-14 py-5 text-base text-primary-foreground transition-transform hover:scale-[1.03]"
-        >
-          Trade on Devnet
-        </button>
+        <div className="animate-fade-rise-delay-2 mt-12 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            asChild
+            size="lg"
+            className="group rounded-full px-10 py-6 text-base"
+          >
+            <Link to="/dashboard">
+              Trade on devnet
+              <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="rounded-full bg-background/60 px-10 py-6 text-base backdrop-blur"
+          >
+            <Link to="/parity">See the proof</Link>
+          </Button>
+        </div>
 
         <div className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="glass-card border-black/5">
@@ -71,9 +84,9 @@ export function HeroSection({ poll }: HeroSectionProps) {
                 href={explorerAccountLink(PROGRAM_ID.toBase58())}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 block font-mono text-xs hover:underline"
+                className="mt-1 block font-mono text-sm font-medium hover:underline"
               >
-                {PROGRAM_ID.toBase58().slice(0, 8)}...
+                {PROGRAM_ID.toBase58().slice(0, 8)}…
               </a>
               <p className="mt-1 text-xs text-muted-foreground">Solana devnet</p>
             </CardContent>
@@ -84,23 +97,25 @@ export function HeroSection({ poll }: HeroSectionProps) {
               <p className="mt-1 text-2xl font-semibold text-[var(--success)]">
                 {PARITY_PASSED}/{PARITY_TOTAL}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">run_parity.sh</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                differential tests
+              </p>
             </CardContent>
           </Card>
           <Card className="glass-card border-black/5">
             <CardContent className="p-4 text-left">
               <p className="text-xs text-muted-foreground">Tick cadence</p>
               <p className="mt-1 text-2xl font-semibold">
-                {poll.loading ? "..." : tickLabel(poll.market)}
+                {poll.loading && !poll.market ? "50ms" : tickLabel(poll.market)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">batch tick</p>
             </CardContent>
           </Card>
           <Card className="glass-card border-black/5">
             <CardContent className="p-4 text-left">
-              <p className="text-xs text-muted-foreground">Last batch status</p>
+              <p className="text-xs text-muted-foreground">Last batch</p>
               <p className="mt-1 text-lg font-semibold">
-                {poll.loading ? "..." : lastBatchLabel(poll.batchResult)}
+                {lastBatchLabel(poll.batchResult)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">live polled</p>
             </CardContent>

@@ -1,41 +1,30 @@
+import { Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { MarketProvider } from "@/context/MarketContext";
 import { WalletProvider } from "@/providers/WalletProvider";
-import { useCrossbarProgram } from "@/hooks/useCrossbarProgram";
-import { useMarketContext } from "@/context/MarketContext";
-import { useMarketPolling } from "@/hooks/useMarketPolling";
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { HeroSection } from "@/components/hero/HeroSection";
-
-function HeroWithPoll() {
-  const marketCtx = useMarketContext();
-  const { baseProgram, erProgram, programId, publicKey } = useCrossbarProgram();
-  const poll = useMarketPolling(
-    marketCtx.marketPubkey,
-    programId,
-    baseProgram,
-    erProgram,
-    publicKey,
-    marketCtx.configured,
-  );
-  return <HeroSection poll={poll} />;
-}
-
-function AppContent() {
-  return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      <HeroWithPoll />
-      <DashboardShell />
-      <Toaster richColors position="bottom-right" />
-    </div>
-  );
-}
+import { RootLayout } from "@/layouts/RootLayout";
+import { LandingPage } from "@/pages/LandingPage";
+import { DashboardPage } from "@/pages/DashboardPage";
+import { IntegrationsPage } from "@/pages/IntegrationsPage";
+import { ParityPage } from "@/pages/ParityPage";
+import { DocsPage } from "@/pages/DocsPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export default function App() {
   return (
     <WalletProvider>
       <MarketProvider>
-        <AppContent />
+        <Routes>
+          <Route element={<RootLayout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/integrations" element={<IntegrationsPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="/parity" element={<ParityPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+          <Route path="/dashboard" element={<DashboardPage />} />
+        </Routes>
+        <Toaster richColors position="bottom-right" />
       </MarketProvider>
     </WalletProvider>
   );

@@ -1,14 +1,5 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { PriceHistoryChart } from "@/components/charts/PriceHistoryChart";
+import { VolumeChart } from "@/components/charts/VolumeChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -39,11 +30,7 @@ export function BatchResultPanel({ poll }: Props) {
   const status = result ? toNum(result.status) : -1;
   const statusLabel = BATCH_STATUS_LABELS[status] ?? "Unknown";
 
-  const chartData = poll.priceHistory.map((p) => ({
-    window: p.window,
-    pStar: p.clearingPrice / 1_000_000,
-    volume: p.matchedVolume,
-  }));
+  const history = poll.priceHistory;
 
   const fills = result
     ? ((result.fills as Array<Record<string, unknown>>) ?? []).slice(
@@ -85,45 +72,27 @@ export function BatchResultPanel({ poll }: Props) {
                 <p className="text-xs text-muted-foreground">Marginal remainder</p>
                 <p className="font-mono text-xs">
                   {formatQty(toNum(result.marginalRemainder))}
-                  <span className="block text-muted-foreground">VRF blast radius only</span>
+                  <span className="block text-muted-foreground">
+                    VRF blast radius only
+                  </span>
                 </p>
               </div>
             </div>
 
-            {chartData.length > 0 && (
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="h-48">
-                  <p className="mb-2 text-xs text-muted-foreground">p* history</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                      <XAxis dataKey="window" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="pStar"
-                        stroke="#000"
-                        dot={false}
-                        name="p*"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="h-48">
-                  <p className="mb-2 text-xs text-muted-foreground">Volume per window</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                      <XAxis dataKey="window" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Bar dataKey="volume" fill="#6f6f6f" name="volume" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Clearing price p* per window
+                </p>
+                <PriceHistoryChart data={history} />
               </div>
-            )}
+              <div>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Matched volume per window
+                </p>
+                <VolumeChart data={history} />
+              </div>
+            </div>
 
             <Table>
               <TableHeader>

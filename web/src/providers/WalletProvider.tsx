@@ -4,12 +4,27 @@ import {
   WalletProvider as SolanaWalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
+import {
+  CoinbaseWalletAdapter,
+  LedgerWalletAdapter,
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
 import { BASE_RPC } from "@/lib/constants";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+  // Standard-wallet detection (Backpack, Glow, etc.) is automatic; these are
+  // the explicitly listed adapters shown in the connect modal.
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+      new CoinbaseWalletAdapter(),
+      new LedgerWalletAdapter(),
+    ],
+    [],
+  );
 
   return (
     <ConnectionProvider endpoint={BASE_RPC}>

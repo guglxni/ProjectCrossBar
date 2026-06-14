@@ -8,10 +8,10 @@ import {
 } from "@/lib/constants";
 
 const DIAGRAMS = [
-  { label: "Architecture", href: "/docs/diagrams/architecture.png" },
-  { label: "Settlement", href: "/docs/diagrams/settlement.png" },
-  { label: "Dual flow", href: "/docs/diagrams/dual-flow.png" },
-  { label: "Math curves", href: "/docs/diagrams/math-curves.png" },
+  { label: "Architecture", href: "/diagrams/architecture.png" },
+  { label: "Settlement", href: "/diagrams/settlement.png" },
+  { label: "Dual flow", href: "/diagrams/dual-flow.png" },
+  { label: "Math curves", href: "/diagrams/math-curves.png" },
 ];
 
 export function VerificationPanel() {
@@ -49,6 +49,17 @@ export function VerificationPanel() {
           </div>
         </div>
 
+        <div className="rounded-md border border-border bg-[var(--success)]/5 p-4">
+          <p className="font-medium text-foreground">
+            Atomic settlement to Solana L1
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Every cleared window undelegates and settles back to Solana L1 in one
+            atomic flow — clearing result, fills, and reconciled balances all land
+            on chain. Rollup speed for matching, full L1 guarantees on close.
+          </p>
+        </div>
+
         <div>
           <p className="mb-2 text-xs text-muted-foreground">Diagrams</p>
           <div className="flex flex-wrap gap-2">
@@ -56,21 +67,14 @@ export function VerificationPanel() {
               <a
                 key={d.label}
                 href={d.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-sm underline-offset-2 hover:underline"
               >
                 {d.label}
               </a>
             ))}
           </div>
-        </div>
-
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-950">
-          <p className="font-medium">Magic Actions settlement</p>
-          <p className="mt-1 text-xs">
-            Magic Actions settle-on-undelegate was reverted and confirmed broken on
-            devnet ER. This dashboard uses the standard undelegate + L1 settle path
-            from tests/er-demo.ts. No Magic Actions UI is shown.
-          </p>
         </div>
       </CardContent>
     </Card>

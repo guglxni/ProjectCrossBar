@@ -5,7 +5,7 @@ const LINKS = [
   { label: "Dashboard", href: "#dashboard" },
   { label: "Parity", href: "#verification" },
   { label: "Integrations", href: "#flash" },
-  { label: "Docs", href: "https://github.com/guglxni/ProjectCrossBar" },
+  { label: "Docs", href: "/docs" },
 ];
 
 function scrollTo(href: string) {

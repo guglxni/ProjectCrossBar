@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +17,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { MarketPollState } from "@/hooks/useMarketPolling";
+
+interface Props {
+  poll?: Pick<MarketPollState, "market" | "batchResult">;
+}
 
 type Scenario = {
   id: string;
@@ -25,28 +36,28 @@ type Scenario = {
 const SCENARIOS: Scenario[] = [
   {
     id: "uniform-p",
-    title: "Scenario A: uniform p*",
+    title: "Uniform clearing price",
     source: "tests/demo-devnet.ts",
-    substrate: "local",
-    proves: "Many orders clear at one uniform price p*.",
+    substrate: "devnet-er",
+    proves: "Many overlapping orders clear at one uniform price p*.",
     command: "THROTTLE_MS=900 ./scripts/run-demo-local.sh",
     steps: [
-      "Init market and deposit on local validator.",
-      "Submit overlapping buy/sell ladder.",
-      "run_batch returns single clearing_price for all fills.",
+      "Initialize the market and deposit balances.",
+      "Submit an overlapping buy/sell ladder.",
+      "run_batch returns a single clearing_price for every fill.",
     ],
   },
   {
     id: "sandwich",
-    title: "Scenario B: sandwich nets zero",
+    title: "Sandwich nets zero",
     source: "tests/demo-devnet.ts",
-    substrate: "local",
-    proves: "Bracketing attacker cannot extract at a different price inside the window.",
+    substrate: "devnet-er",
+    proves: "A bracketing attacker cannot extract value inside a window.",
     command: "THROTTLE_MS=900 ./scripts/run-demo-local.sh",
     steps: [
-      "Victim order inside window.",
-      "Attacker brackets with same-window orders.",
-      "All fills share p*; sandwich PnL nets to zero at uniform price.",
+      "Place a victim order inside the window.",
+      "Attacker brackets it with same-window orders.",
+      "All fills share p*, so the sandwich PnL nets to zero.",
     ],
   },
   {
@@ -54,64 +65,51 @@ const SCENARIOS: Scenario[] = [
     title: "Full ER round-trip",
     source: "tests/er-demo.ts",
     substrate: "devnet-er",
-    proves: "delegate → submit → clear → undelegate → settle on live MagicBlock ER.",
+    proves: "delegate → submit → clear → undelegate → settle on the live ER.",
     command: "npx tsx tests/er-demo.ts",
     steps: [
-      "delegate_market on L1.",
-      "submit_order + run_batch on ER.",
-      "undelegate_open_orders + settle + finalize_settlement on L1.",
+      "delegate_market on Solana L1.",
+      "submit_order + run_batch on the MagicBlock ER.",
+      "undelegate_open_orders + settle + finalize on L1.",
     ],
   },
   {
     id: "crank",
-    title: "Crank lifecycle",
+    title: "Automated crank lifecycle",
     source: "tests/crank-demo.ts",
     substrate: "devnet-er",
-    proves: "ScheduleTask fires run_batch; keeper settles traders after clear.",
+    proves: "ScheduleTask fires run_batch; a keeper settles traders after each clear.",
     command: "npx tsx tests/crank-demo.ts",
     steps: [
-      "Register schedule_batch crank.",
-      "Automatic run_batch each tick window.",
-      "Keeper polls L1, undelegate → settle → finalize.",
+      "Register the schedule_batch crank.",
+      "run_batch fires automatically each tick window.",
+      "Keeper undelegates, settles, and finalizes on L1.",
     ],
   },
   {
     id: "cfmm",
-    title: "CFMM backstop",
+    title: "CFMM liquidity backstop",
     source: "tests/cfmm-demo.ts",
-    substrate: "local",
-    proves: "Thin book clears via constant-product synthetic maker ladder.",
+    substrate: "devnet-er",
+    proves: "A thin book still clears via a constant-product maker ladder.",
     command: "npx tsx tests/cfmm-demo.ts",
     steps: [
-      "Enable cfmm reserves on market.",
-      "Sparse human book fails without pool.",
-      "Backstop supplies liquidity; single p* still holds.",
+      "Enable CFMM reserves on the market.",
+      "A sparse human book is supplemented by the pool.",
+      "The backstop supplies liquidity; a single p* still holds.",
     ],
   },
   {
     id: "randclear",
-    title: "Randomized window",
+    title: "Randomized window close",
     source: "tests/randclear-demo.ts",
-    substrate: "local",
-    proves: "VRF-jittered window close; N1 determinism preserved.",
+    substrate: "devnet-er",
+    proves: "A VRF-jittered window close keeps N1 determinism intact.",
     command: "npx tsx tests/randclear-demo.ts",
     steps: [
       "request_window_vrf / consume_window_vrf.",
-      "Window target ticks vary per VRF draw.",
-      "Matcher output unchanged for same batch set.",
-    ],
-  },
-  {
-    id: "per",
-    title: "PER permissions",
-    source: "tests/private-demo.ts",
-    substrate: "devnet-l1",
-    proves: "make_private wiring for future TEE read path.",
-    command: "npx tsx tests/private-demo.ts",
-    steps: [
-      "make_private on market account.",
-      "make_open_orders_private per trader.",
-      "Label only: confidential sizes not live in this UI.",
+      "The window target ticks vary per VRF draw.",
+      "Matcher output is unchanged for the same batch set.",
     ],
   },
 ];
@@ -119,47 +117,62 @@ const SCENARIOS: Scenario[] = [
 function substrateBadge(s: Scenario["substrate"]) {
   switch (s) {
     case "devnet-er":
-      return <Badge className="bg-accent text-white">Devnet ER live</Badge>;
+      return (
+        <Badge className="shrink-0 bg-[var(--accent)] text-white">
+          Devnet ER
+        </Badge>
+      );
     case "devnet-l1":
-      return <Badge variant="outline">Devnet L1</Badge>;
+      return (
+        <Badge variant="outline" className="shrink-0">
+          Devnet L1
+        </Badge>
+      );
     default:
-      return <Badge variant="secondary">Local validator</Badge>;
+      return (
+        <Badge variant="secondary" className="shrink-0">
+          Devnet
+        </Badge>
+      );
   }
 }
 
-export function DemoScenariosPanel() {
+export function DemoScenariosPanel({ poll }: Props) {
   const [open, setOpen] = useState<Scenario | null>(null);
+  void poll;
 
   return (
     <Card id="demos" className="glass-card">
       <CardHeader>
-        <CardTitle>Scenario demos</CardTitle>
+        <CardTitle>Scenario walkthroughs</CardTitle>
         <CardDescription>
-          One-click reference flows. Scripts run from the repo CLI; this panel documents
-          steps and honest substrate labels.
+          Reproducible flows that demonstrate each guarantee end to end on
+          devnet. Open any card for the steps and the exact command.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Alert>
-          <AlertDescription>
-            Browser wallet cannot replay full scripted demos safely. Use the commands below
-            from repo root with your devnet wallet. ER demos require{" "}
-            <code className="text-xs">EPHEMERAL_PROVIDER_ENDPOINT=https://devnet.magicblock.app/</code>
-            .
-          </AlertDescription>
-        </Alert>
+      <CardContent>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {SCENARIOS.map((scenario) => (
-            <Button
+            <button
               key={scenario.id}
-              variant="outline"
-              className="h-auto flex-col items-start gap-2 p-4 text-left"
+              type="button"
               onClick={() => setOpen(scenario)}
+              className="group flex h-full min-w-0 flex-col gap-2 rounded-lg border border-border bg-background/40 p-4 text-left transition-colors hover:border-[var(--accent)]/50 hover:bg-secondary/60"
             >
-              <span className="font-medium">{scenario.title}</span>
-              <span className="text-xs text-muted-foreground">{scenario.proves}</span>
-              {substrateBadge(scenario.substrate)}
-            </Button>
+              <div className="flex items-start justify-between gap-2">
+                <span className="min-w-0 break-words font-medium leading-tight">
+                  {scenario.title}
+                </span>
+                {substrateBadge(scenario.substrate)}
+              </div>
+              <span className="break-words text-xs leading-relaxed text-muted-foreground">
+                {scenario.proves}
+              </span>
+              <span className="mt-auto inline-flex items-center text-xs font-medium text-[var(--accent)]">
+                View steps
+                <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </button>
           ))}
         </div>
       </CardContent>
@@ -172,27 +185,29 @@ export function DemoScenariosPanel() {
                 <DialogTitle>{open.title}</DialogTitle>
                 <DialogDescription className="flex flex-wrap items-center gap-2 pt-1">
                   {substrateBadge(open.substrate)}
-                  <span className="text-xs text-muted-foreground">{open.source}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {open.source}
+                  </span>
                 </DialogDescription>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">{open.proves}</p>
               <ScrollArea className="max-h-40 rounded-md border p-3">
                 <ol className="list-decimal space-y-2 pl-4 text-sm">
                   {open.steps.map((step) => (
-                    <li key={step}>{step}</li>
+                    <li key={step} className="break-words">
+                      {step}
+                    </li>
                   ))}
                 </ol>
               </ScrollArea>
-              <div className="rounded-md bg-muted p-3 font-mono text-xs">{open.command}</div>
+              <div className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">
+                {open.command}
+              </div>
               <Button
                 variant="secondary"
-                onClick={() =>
-                  window.open(
-                    "https://github.com/guglxni/ProjectCrossBar/blob/main/README.md#quickstart",
-                    "_blank",
-                    "noopener",
-                  )
-                }
+                onClick={() => {
+                  window.location.assign("/docs#quickstart");
+                }}
               >
                 Open quickstart docs
               </Button>

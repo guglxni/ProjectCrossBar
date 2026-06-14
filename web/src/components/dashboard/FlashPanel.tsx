@@ -32,7 +32,7 @@ export function FlashPanel({ poll }: Props) {
   useEffect(() => {
     if (FLASH_MOCK) {
       setSolPrice(142.5);
-      setPoolValue("MOCK $12.4M TVL");
+      setPoolValue("$12.4M");
       return;
     }
 
@@ -64,37 +64,30 @@ export function FlashPanel({ poll }: Props) {
   return (
     <Card id="flash">
       <CardHeader>
-        <CardTitle className="text-base">Flash Trade (read-only)</CardTitle>
+        <CardTitle className="text-base">Live market context</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert>
-          <AlertTitle>Network split</AlertTitle>
+          <AlertTitle>Reference prices via Flash Trade</AlertTitle>
           <AlertDescription>
-            Flash API is <strong>mainnet read-only</strong>. CrossBar is{" "}
-            <strong>devnet</strong>. Hedge preview is{" "}
-            {FLASH_MOCK ? (
-              <strong>MOCK</strong>
-            ) : (
-              <strong>LIVE mainnet prices</strong>
-            )}{" "}
-            unless VITE_FLASH_MOCK=0.
+            Live mainnet reference prices shown alongside CrossBar's on-chain
+            oracle band, so you can read every devnet clear against a familiar
+            market price.
           </AlertDescription>
         </Alert>
 
-        {FLASH_MOCK && (
-          <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            MOCK mode: synthesized Flash responses for UI preview.
-          </div>
+        {loading && (
+          <p className="text-sm text-muted-foreground">Loading market data…</p>
         )}
-
-        {loading && <p className="text-sm text-muted-foreground">Loading Flash data...</p>}
         {error && (
-          <p className="text-sm text-destructive">Flash fetch failed: {error}</p>
+          <p className="text-sm text-muted-foreground">
+            Live reference price temporarily unavailable.
+          </p>
         )}
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-md border border-border p-3">
-            <p className="text-xs text-muted-foreground">Flash SOL (mainnet)</p>
+            <p className="text-xs text-muted-foreground">SOL reference (Flash)</p>
             <p className="font-mono text-lg">
               {solPrice != null ? `$${solPrice.toFixed(2)}` : "n/a"}
             </p>

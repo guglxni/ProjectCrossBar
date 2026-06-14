@@ -14,9 +14,17 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173
+Open http://localhost:5173/docs for protocol documentation.
 
-## Environment
+## Routes
+
+| Path | Page |
+| --- | --- |
+| `/` | Landing |
+| `/docs` | Protocol documentation |
+| `/dashboard` | Live devnet trading dashboard |
+| `/parity` | Verification and invariants |
+| `/integrations` | Stack integrations |
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
