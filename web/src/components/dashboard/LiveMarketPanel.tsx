@@ -8,6 +8,11 @@ import { useMarketChart } from "@/hooks/useCoinGecko";
 import { formatPct, formatUsd, type PricePoint } from "@/lib/coingecko";
 import { cn } from "@/lib/utils";
 
+// Live ticks are bucketed onto this 5-minute grid — the same boundaries Pyth
+// Benchmarks candles fall on — so the chart only advances on :00/:05/:10/… ,
+// never at an arbitrary refresh time.
+const BUCKET_MS = 300_000;
+
 function formatCompactUsd(v: number): string {
   if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
   if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
@@ -63,11 +68,11 @@ export function LiveMarketPanel() {
     selectedEntry?.change24h ?? chart?.changePct24h ?? null;
   const up = changePct == null ? true : changePct >= 0;
 
-  // Live tail: append one VERIFIED Flash tick per refresh. Flash polls on the
-  // same 5-minute cadence as the chart's market data (MARKET_DATA_INTERVAL_MS),
-  // so the tail advances the right edge once every ~5 min — matching how the
-  // chart's own points are spaced — without ever plotting a fabricated value.
-  // Reset whenever the selected coin changes.
+  // Live tail: one VERIFIED Flash tick per 5-minute bucket. Each tick snaps to
+  // its bucket start (floor to BUCKET_MS), so a refresh at 10:48 records against
+  // the 10:45 bucket — the chart's right edge holds 10:45 and only advances when
+  // the 10:50 bucket opens, matching how Pyth's candles are spaced. Never plots
+  // a fabricated value. Reset whenever the selected coin changes.
   const [liveTail, setLiveTail] = useState<PricePoint[]>([]);
   const tailCoin = useRef(selected.id);
   if (tailCoin.current !== selected.id) {
@@ -76,10 +81,17 @@ export function LiveMarketPanel() {
   }
   useEffect(() => {
     if (!isVerifiedLive(flashPrice)) return;
+    const bucket = Math.floor(Date.now() / BUCKET_MS) * BUCKET_MS;
     setLiveTail((prev) => {
       const last = prev[prev.length - 1];
-      if (last && last.price === flashPrice) return prev; // unchanged tick
-      const next = [...prev, { t: Date.now(), price: flashPrice }];
+      if (last && last.t === bucket) {
+        // Same 5-min bucket: refresh its value in place, never add a new point.
+        if (last.price === flashPrice) return prev;
+        const copy = prev.slice();
+        copy[copy.length - 1] = { t: bucket, price: flashPrice };
+        return copy;
+      }
+      const next = [...prev, { t: bucket, price: flashPrice }];
       return next.length > 48 ? next.slice(-48) : next; // ~4h of 5-min ticks
     });
     // isVerifiedLive closes over source + refPrice; both are in the dep list.
