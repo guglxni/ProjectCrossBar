@@ -1,35 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { TICKER_COINS, getTickerPrices, type TickerEntry } from "@/lib/coingecko";
 import { getFlashPrices } from "@/lib/flash-prices";
-import { getTicker24hChanges } from "@/lib/market-data";
+import { getTicker24hChanges, MARKET_DATA_INTERVAL_MS } from "@/lib/market-data";
 
 /**
  * Live market ticker with Flash Trade as the PRIMARY price source.
  *
  * - Price: Flash Trade `/prices` (live Pyth Lazer feed).
- * - 24h change %: Pyth Benchmarks (same oracle family as Flash), CoinGecko fallback.
+ * - 24h change %: Pyth Hermes → DefiLlama → CoinGecko (browser-direct).
  *
- * Both are polled independently and merged. Last good values are kept across
- * transient errors so the marquee never empties.
+ * Prices and 24h stats refresh on the same 5-minute cadence as the chart.
+ *
+ * There are NO seeded/placeholder prices: a coin's price is `null` until a real
+ * source returns it. Verified live data only — nothing fabricated ever renders.
  */
-
-const SEED_PRICE: Record<string, number> = {
-  SOL: 142.5,
-  ETH: 3120,
-  BTC: 64200,
-  BNB: 604,
-  HYPE: 41,
-  JUP: 0.78,
-  BONK: 0.0000182,
-  JTO: 2.45,
-  PYTH: 0.42,
-  WIF: 1.6,
-};
 
 export interface MarketTickerState {
   entries: TickerEntry[];
   live: boolean;
-  source: "flash" | "coingecko" | "seed";
+  source: "flash" | "coingecko" | "loading";
   updatedAt: number | null;
 }
 
@@ -56,7 +45,7 @@ export function useMarketTicker(): MarketTickerState {
       }
     }
     load();
-    const id = setInterval(load, 10_000);
+    const id = setInterval(load, MARKET_DATA_INTERVAL_MS);
     return () => {
       cancelled = true;
       controller.abort();
@@ -83,7 +72,9 @@ export function useMarketTicker(): MarketTickerState {
           const rows = await getTickerPrices(TICKER_COINS, controller.signal);
           if (!cancelled) {
             const prices: Record<string, number> = {};
-            for (const r of rows) prices[r.symbol] = r.price;
+            for (const r of rows) {
+              if (r.price != null) prices[r.symbol] = r.price;
+            }
             setCgPrices(prices);
           }
         } catch {
@@ -92,16 +83,11 @@ export function useMarketTicker(): MarketTickerState {
       }
     }
 
-    // Let the selected-coin chart fetch first (avoids burst 429 on cold load).
-    const boot = setTimeout(() => {
-      if (!cancelled) load();
-    }, 2_000);
-
-    const id = setInterval(load, 300_000);
+    load();
+    const id = setInterval(load, MARKET_DATA_INTERVAL_MS);
     return () => {
       cancelled = true;
       controller.abort();
-      clearTimeout(boot);
       clearInterval(id);
     };
   }, []);
@@ -111,11 +97,11 @@ export function useMarketTicker(): MarketTickerState {
     ? "flash"
     : cgPrices
       ? "coingecko"
-      : "seed";
+      : "loading";
 
   const entries: TickerEntry[] = TICKER_COINS.map((c) => {
-    const price =
-      flash?.[c.symbol] ?? cgPrices?.[c.symbol] ?? SEED_PRICE[c.symbol] ?? 0;
+    // No seed: price is null until Flash (or the CoinGecko fallback) returns it.
+    const price = flash?.[c.symbol] ?? cgPrices?.[c.symbol] ?? null;
     const pct = change24h?.[c.symbol] ?? null;
     return { id: c.id, symbol: c.symbol, pair: c.pair, price, change24h: pct };
   });

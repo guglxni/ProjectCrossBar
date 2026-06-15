@@ -53,25 +53,22 @@ Market context on `/dashboard` is **off-chain only** — it does not feed `run_b
 
 | Data | Source | Module |
 | --- | --- | --- |
-| Live spot price | Flash Trade `GET /prices` (Pyth Lazer) | `src/lib/flash-prices.ts` |
-| 24h change % | Pyth Benchmarks hourly candles (`Crypto.{SYMBOL}/USD`) | `src/lib/pyth-benchmarks.ts` |
-| Intraday chart + 24h high/low | Pyth Benchmarks TradingView shim | `src/lib/market-data.ts` |
-| Fallback (change + chart) | CoinGecko via proxied API | `src/lib/coingecko.ts` |
+| Spot price (5m) | Flash Trade `GET /prices` (Pyth Lazer) | `src/lib/flash-prices.ts` |
+| 24h change % | Pyth Hermes (batched latest + 24h ago) | `src/lib/pyth-hermes.ts` |
+| 24h fallback | DefiLlama → CoinGecko | `src/lib/defillama.ts`, `coingecko.ts` |
+| Intraday chart + 24h high/low | Pyth Benchmarks (browser-direct) | `src/lib/pyth-benchmarks.ts` |
+| Chart fallback | CoinGecko direct, then `/api/coingecko` proxy | `src/lib/coingecko.ts` |
 
-Flash's REST API has **no** 24h change or history endpoint. Pyth Benchmarks uses the same oracle family as Flash (`pythTicker` strings like `Crypto.SOL/USD`). CoinGecko is only used when Pyth fails.
+Flash's REST API has **no** 24h change or history endpoint. Hermes and Benchmarks use the same Pyth oracle family as Flash. Browser-direct calls (CORS *) avoid Vercel shared-egress rate limits that broke the old proxy-only setup.
 
-**Dev proxies** (Vite `vite.config.ts`):
+**Dev proxy** (Vite): `/api/coingecko/*` → CoinGecko (fallback when browser direct fails).
 
-- `/api/pyth/*` → `benchmarks.pyth.network`
-- `/api/coingecko/*` → `api.coingecko.com/api/v3`
-
-**Production** (Vercel rewrites in `vercel.json`): `/api/pyth` and `/api/coingecko` proxy to upstream hosts at the edge. The SPA fallback excludes `/api/*` so routes are not swallowed by `index.html`.
+**Production**: `/api/coingecko/[...path]` serverless handler adds User-Agent + optional API key. Pyth Hermes and Benchmarks are called from the browser.
 
 | Server env (Vercel only) | Purpose |
 | --- | --- |
-| `COINGECKO_API_KEY` | Optional CoinGecko demo key for fallback tier headroom |
-
-Pyth docs note Benchmarks may require a Bearer token from **July 2026**; add `PYTH_API_KEY` to the edge proxy when that lands.
+| `COINGECKO_API_KEY` or `COINGECKO_PRO_API_KEY` | CoinGecko pro key for proxy fallback |
+| `COINGECKO_DEMO_API_KEY` | CoinGecko demo tier key for proxy fallback |
 
 After changing proxy or env wiring, restart `npm run dev` and hard-refresh the dashboard (Cmd+Shift+R).
 

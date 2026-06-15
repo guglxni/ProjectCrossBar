@@ -4,15 +4,15 @@
  * Flash Trade prices come from Pyth Lazer; Benchmarks exposes the same oracle
  * family as hourly candles (`Crypto.{SYMBOL}/USD`).
  *
- * Requests are serialized and cached aggressively. The upstream rate-limits burst
- * traffic (shared Vercel egress); on 429 we serve stale cache when available.
+ * Requests are serialized and cached aggressively. Browser-direct calls use the
+ * user's IP (CORS *), avoiding Vercel shared-egress 429 bursts.
  *
  * CrossBar clears on devnet; this is market context only.
  */
 
 import type { MarketChart, PricePoint } from "@/lib/coingecko";
 
-const BASE = "/api/pyth/v1/shims/tradingview";
+const BASE = "https://benchmarks.pyth.network/v1/shims/tradingview";
 const CHART_TTL_MS = 300_000;
 const STALE_MAX_MS = 1_800_000;
 const SYMBOL_GAP_MS = 400;

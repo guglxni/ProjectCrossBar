@@ -35,10 +35,10 @@ const INTEGRATIONS = [
     icon: LineChart,
     name: "Flash Trade price feed",
     tag: "Market data",
-    body: "CrossBar reads live marks from Flash Trade (Pyth Lazer) for the dashboard marquee. 24h change and intraday charts come from Pyth Benchmarks, the same oracle family Flash uses. CoinGecko is the fallback.",
+    body: "CrossBar reads spot marks from Flash Trade (Pyth Lazer, 5-minute refresh). 24h change uses Pyth Hermes (batched); charts use Pyth Benchmarks browser-direct. DefiLlama and CoinGecko are fallbacks.",
     points: [
-      "Live prices: Flash GET /prices (SOL, ETH, BTC, and majors)",
-      "24h % + chart: Pyth Benchmarks Crypto.{SYMBOL}/USD",
+      "Spot prices: Flash GET /prices (SOL, ETH, BTC, and majors)",
+      "24h %: Pyth Hermes → DefiLlama → CoinGecko",
       "Read-only market context — never feeds run_batch",
     ],
     href: "https://flash.trade/",

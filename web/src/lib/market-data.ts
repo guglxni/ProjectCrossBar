@@ -1,6 +1,6 @@
 /**
  * Unified market context: Flash live price + Pyth Benchmarks history/stats,
- * with CoinGecko as a fallback when Pyth or the proxy is unavailable.
+ * with Hermes, DefiLlama, and CoinGecko fallbacks.
  */
 
 import {
@@ -9,7 +9,12 @@ import {
   getCoinGeckoMarketChart,
   getTickerPrices,
 } from "@/lib/coingecko";
-import { getPythChart, getPythTickerChanges } from "@/lib/pyth-benchmarks";
+import { getLlamaTickerChanges } from "@/lib/defillama";
+import { getPythChart } from "@/lib/pyth-benchmarks";
+import { getHermesTickerChanges } from "@/lib/pyth-hermes";
+
+/** Shared refresh cadence for marquee prices, 24h stats, and intraday charts. */
+export const MARKET_DATA_INTERVAL_MS = 300_000;
 
 /** Intraday chart: Pyth Benchmarks first, CoinGecko fallback. */
 export async function getMarketChart(
@@ -23,27 +28,57 @@ export async function getMarketChart(
   }
 }
 
+function mergeChanges(
+  target: Record<string, number>,
+  source: Record<string, number>,
+): void {
+  for (const [sym, pct] of Object.entries(source)) {
+    if (target[sym] == null) target[sym] = pct;
+  }
+}
+
 /**
  * 24h % change keyed by symbol.
- * Prefer one CoinGecko batch (single request); fall back to sequential Pyth.
+ * Hermes (2 batched calls) → DefiLlama (2) → CoinGecko (1) → partial merge.
  */
 export async function getTicker24hChanges(
   coins: CoinMeta[],
   signal?: AbortSignal,
 ): Promise<Record<string, number>> {
-  try {
-    const rows = await getTickerPrices(coins, signal);
-    const out: Record<string, number> = {};
-    for (const r of rows) {
-      if (r.change24h != null) out[r.symbol] = r.change24h;
+  const out: Record<string, number> = {};
+  const need = () => Object.keys(out).length < Math.ceil(coins.length / 2);
+
+  if (need()) {
+    try {
+      mergeChanges(out, await getHermesTickerChanges(
+        coins.map((c) => c.symbol),
+        signal,
+      ));
+    } catch {
+      /* next source */
     }
-    if (Object.keys(out).length >= Math.ceil(coins.length / 2)) return out;
-  } catch {
-    /* fall through */
   }
 
-  return getPythTickerChanges(
-    coins.map((c) => c.symbol),
-    signal,
-  );
+  if (need()) {
+    try {
+      mergeChanges(out, await getLlamaTickerChanges(coins, signal));
+    } catch {
+      /* next source */
+    }
+  }
+
+  if (need()) {
+    try {
+      const rows = await getTickerPrices(coins, signal);
+      for (const r of rows) {
+        if (r.change24h != null && out[r.symbol] == null) {
+          out[r.symbol] = r.change24h;
+        }
+      }
+    } catch {
+      /* keep partial */
+    }
+  }
+
+  return out;
 }

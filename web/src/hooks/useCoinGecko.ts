@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CoinMeta, MarketChart } from "@/lib/coingecko";
-import { getMarketChart } from "@/lib/market-data";
+import { MARKET_DATA_INTERVAL_MS, getMarketChart } from "@/lib/market-data";
 
 interface ChartState {
   chart: MarketChart | null;
@@ -15,7 +15,7 @@ interface ChartState {
  */
 export function useMarketChart(
   coin: CoinMeta,
-  intervalMs = 300_000,
+  intervalMs = MARKET_DATA_INTERVAL_MS,
 ): ChartState {
   const [state, setState] = useState<ChartState>({
     chart: null,

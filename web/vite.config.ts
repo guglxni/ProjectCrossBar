@@ -24,11 +24,9 @@ export default defineConfig({
         target: "https://api.coingecko.com/api/v3",
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api\/coingecko/, ""),
-      },
-      "/api/pyth": {
-        target: "https://benchmarks.pyth.network",
-        changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api\/pyth/, ""),
+        headers: {
+          "User-Agent": "ProjectCrossBar/1.0 (+http://localhost:5173)",
+        },
       },
     },
   },

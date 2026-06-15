@@ -6,37 +6,11 @@
   "installCommand": "npm install",
   "rewrites": [
     {
-      "source": "/api/pyth/:path*",
-      "destination": "https://benchmarks.pyth.network/:path*"
-    },
-    {
-      "source": "/api/coingecko/:path*",
-      "destination": "https://api.coingecko.com/api/v3/:path*"
-    },
-    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
-    {
-      "source": "/api/pyth/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=300, stale-while-revalidate=900"
-        }
-      ]
-    },
-    {
-      "source": "/api/coingecko/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=120, stale-while-revalidate=600"
-        }
-      ]
-    },
     {
       "source": "/assets/(.*)",
       "headers": [

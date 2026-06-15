@@ -1,16 +1,13 @@
 /**
  * CoinGecko fallback client (24h change + intraday chart).
  *
- * Primary history/stats come from Pyth Benchmarks (`pyth-benchmarks.ts`), which
- * matches Flash Trade's Pyth oracle. CoinGecko is used only when Pyth fails.
- *
- * Calls go through `/api/coingecko/*` (Vite dev proxy + Vercel edge handler).
- * Set `COINGECKO_API_KEY` on Vercel for higher free-tier limits (optional).
- *
- * CrossBar clears on devnet; nothing here touches the matcher.
+ * Primary history/stats come from Pyth Benchmarks (`pyth-benchmarks.ts`).
+ * CoinGecko is used when Pyth fails. Browser calls go direct (CORS *); the
+ * `/api/coingecko` proxy on Vercel adds an API key when configured.
  */
 
-const BASE = "/api/coingecko";
+const CG_DIRECT = "https://api.coingecko.com/api/v3";
+const CG_PROXY = "/api/coingecko";
 
 interface CacheEntry<T> {
   data: T;
@@ -20,22 +17,21 @@ interface CacheEntry<T> {
 const cache = new Map<string, CacheEntry<unknown>>();
 const inflight = new Map<string, Promise<unknown>>();
 
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new DOMException("Aborted", "AbortError"));
-      return;
-    }
-    const id = setTimeout(resolve, ms);
-    signal?.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(id);
-        reject(new DOMException("Aborted", "AbortError"));
-      },
-      { once: true },
-    );
+async function cgFetchOnce<T>(
+  base: string,
+  path: string,
+  signal?: AbortSignal,
+): Promise<T> {
+  const res = await fetch(`${base}${path}`, {
+    signal,
+    headers: { accept: "application/json" },
   });
+  if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
+  const ct = res.headers.get("content-type") ?? "";
+  if (!ct.includes("application/json")) {
+    throw new Error("CoinGecko: non-JSON response");
+  }
+  return (await res.json()) as T;
 }
 
 async function cgFetch<T>(path: string, signal?: AbortSignal, ttlMs = 90_000): Promise<T> {
@@ -47,35 +43,17 @@ async function cgFetch<T>(path: string, signal?: AbortSignal, ttlMs = 90_000): P
   if (pending) return pending;
 
   const task = (async () => {
-    const res = await fetch(`${BASE}${path}`, {
-      signal,
-      headers: { accept: "application/json" },
-    });
-    if (res.status === 429 && hit) return hit.data;
-    if (res.status === 429) {
-      await sleep(1500, signal);
-      const retry = await fetch(`${BASE}${path}`, {
-        signal,
-        headers: { accept: "application/json" },
-      });
-      if (retry.status === 429 && hit) return hit.data;
-      if (!retry.ok) throw new Error(`CoinGecko ${retry.status}`);
-      const ct2 = retry.headers.get("content-type") ?? "";
-      if (!ct2.includes("application/json")) {
-        throw new Error("CoinGecko: non-JSON response");
+    for (const base of [CG_DIRECT, CG_PROXY]) {
+      try {
+        const data = await cgFetchOnce<T>(base, path, signal);
+        cache.set(key, { data, expiry: Date.now() + ttlMs });
+        return data;
+      } catch {
+        /* try next base */
       }
-      const data = (await retry.json()) as T;
-      cache.set(key, { data, expiry: Date.now() + ttlMs });
-      return data;
     }
-    if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
-    const ct = res.headers.get("content-type") ?? "";
-    if (!ct.includes("application/json")) {
-      throw new Error("CoinGecko: non-JSON response");
-    }
-    const data = (await res.json()) as T;
-    cache.set(key, { data, expiry: Date.now() + ttlMs });
-    return data;
+    if (hit) return hit.data;
+    throw new Error("CoinGecko unavailable");
   })();
 
   inflight.set(key, task);
@@ -115,12 +93,12 @@ export const TICKER_COINS: CoinMeta[] = [
   { id: "dogwifcoin", symbol: "WIF", pair: "WIF/USD" },
 ];
 
-/** One ticker row: live price + optional 24h change %. */
+/** One ticker row: live price (null until a real source loads) + 24h change %. */
 export interface TickerEntry {
   id: string;
   symbol: string;
   pair: string;
-  price: number;
+  price: number | null;
   change24h: number | null;
 }
 
@@ -137,7 +115,7 @@ export async function getTickerPrices(
   const path = `/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
   const data = await cgFetch<SimplePriceResponse>(path, signal, 300_000);
   return coins
-    .map((c) => {
+    .map((c): TickerEntry | null => {
       const row = data[c.id];
       if (!row) return null;
       return {

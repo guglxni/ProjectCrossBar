@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,55 +34,78 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "up
 }
 
 /**
- * Live trading panel: the selected coin's live price (Flash Trade), 24h stats,
- * and an intraday area chart (Pyth Benchmarks history). The coin is chosen by clicking
- * the marquee above — switching it re-points the chart, exactly like flash.trade
- * switching SOL/USD → BTC/USD. Prices from Flash Trade; 24h change from Pyth
- * Benchmarks. Market context only; CrossBar clears on devnet.
+ * Market context panel: Flash Trade price, Pyth Benchmarks 24h stats, and
+ * intraday chart. Marquee selection switches the pair. All market data refreshes
+ * every 5 minutes (same cadence as the hourly chart buckets). CrossBar clears on devnet.
  */
 export function LiveMarketPanel() {
-  const { selected, selectedEntry, source } = useMarketTickerContext();
+  const { selected, selectedEntry, source, updatedAt } = useMarketTickerContext();
   const { chart, loading, error } = useMarketChart(selected);
 
-  // Live price prefers Flash (selectedEntry); chart's last is the fallback.
-  const livePrice = selectedEntry?.price ?? chart?.last ?? 0;
-  // 24h change prefers Pyth (selectedEntry.change24h); chart-derived fallback.
+  // The established price from real history — the trust anchor for live ticks.
+  const refPrice = chart?.last ?? null;
+  const flashPrice = selectedEntry?.price ?? null;
+
+  // A Flash tick is trusted as real ONLY when the Flash feed is actually live
+  // AND the value sits within a sane band of the established history price. This
+  // rejects any bad oracle print (and, by construction, anything not from Flash),
+  // so nothing fabricated ever reaches the chart or headline.
+  const isVerifiedLive = (p: number | null): p is number =>
+    source === "flash" &&
+    p != null &&
+    p > 0 &&
+    (refPrice == null || refPrice <= 0 || Math.abs(p - refPrice) / refPrice <= 0.2);
+
+  // Verified data only: a real Flash price, else the chart's last real value,
+  // else null (renders as a dash). No seed/placeholder can ever appear here.
+  const livePrice = isVerifiedLive(flashPrice) ? flashPrice : refPrice ?? null;
   const changePct =
     selectedEntry?.change24h ?? chart?.changePct24h ?? null;
   const up = changePct == null ? true : changePct >= 0;
 
-  // Live tail: append the live Flash price as fresh points so the chart's right
-  // edge advances in real time on top of the Pyth intraday history. Reset
-  // whenever the selected coin changes.
+  // Live tail: append one VERIFIED Flash tick per refresh. Flash polls on the
+  // same 5-minute cadence as the chart's market data (MARKET_DATA_INTERVAL_MS),
+  // so the tail advances the right edge once every ~5 min — matching how the
+  // chart's own points are spaced — without ever plotting a fabricated value.
+  // Reset whenever the selected coin changes.
   const [liveTail, setLiveTail] = useState<PricePoint[]>([]);
-
+  const tailCoin = useRef(selected.id);
+  if (tailCoin.current !== selected.id) {
+    tailCoin.current = selected.id;
+    if (liveTail.length) setLiveTail([]);
+  }
   useEffect(() => {
-    setLiveTail([]);
-  }, [selected.symbol]);
-
-  useEffect(() => {
-    if (!livePrice || livePrice <= 0) return;
+    if (!isVerifiedLive(flashPrice)) return;
     setLiveTail((prev) => {
       const last = prev[prev.length - 1];
-      if (last && last.price === livePrice) return prev; // unchanged tick
-      const next = [...prev, { t: Date.now(), price: livePrice }];
-      return next.length > 180 ? next.slice(-180) : next;
+      if (last && last.price === flashPrice) return prev; // unchanged tick
+      const next = [...prev, { t: Date.now(), price: flashPrice }];
+      return next.length > 48 ? next.slice(-48) : next; // ~4h of 5-min ticks
     });
-  }, [livePrice]);
+    // isVerifiedLive closes over source + refPrice; both are in the dep list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flashPrice, source, refPrice]);
 
+  // History + verified live ticks newer than the last history point.
   const points = useMemo<PricePoint[]>(() => {
     const base = chart?.points ?? [];
     if (!liveTail.length) return base;
     const baseLastT = base.length ? base[base.length - 1].t : 0;
-    // Only append ticks newer than the history's last point.
     const fresh = liveTail.filter((p) => p.t > baseLastT);
     return base.concat(fresh);
   }, [chart, liveTail]);
 
+  const updatedLabel =
+    updatedAt != null
+      ? new Date(updatedAt).toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : null;
+
   return (
     <Card id="livemarket" className="overflow-hidden">
       <CardContent className="space-y-5 p-5">
-        {/* headline */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -93,15 +116,15 @@ export function LiveMarketPanel() {
                 <span
                   className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    source === "flash" ? "animate-pulse bg-[var(--success)]" : "bg-muted-foreground",
+                    source === "flash" ? "bg-[var(--success)]" : "bg-muted-foreground",
                   )}
                 />
-                {source === "flash" ? "Flash · Pyth" : "Live"}
+                {source === "flash" ? "Flash · Pyth · 5m" : "5m refresh"}
               </Badge>
             </div>
             <div className="mt-2 flex items-baseline gap-3">
               <span className="font-mono text-3xl font-semibold tabular-nums">
-                {formatUsd(livePrice)}
+                {livePrice == null ? "—" : formatUsd(livePrice)}
               </span>
               <span
                 className={cn(
@@ -125,7 +148,6 @@ export function LiveMarketPanel() {
             </div>
           </div>
 
-          {/* 24h stats */}
           <div className="grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-4">
             <Stat label="24h High" value={chart ? formatUsd(chart.high) : "—"} />
             <Stat label="24h Low" value={chart ? formatUsd(chart.low) : "—"} />
@@ -141,7 +163,6 @@ export function LiveMarketPanel() {
           </div>
         </div>
 
-        {/* chart */}
         <div className="rounded-md border border-border bg-background/40 p-2">
           {error && !chart ? (
             <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
@@ -157,7 +178,6 @@ export function LiveMarketPanel() {
           )}
         </div>
 
-        {/* link out to Flash */}
         <div className="flex items-center justify-end">
           <a
             href="https://www.flash.trade/"
@@ -172,10 +192,11 @@ export function LiveMarketPanel() {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          {loading && !chart ? "Loading live market data… " : ""}
-          Live price via Flash Trade (Pyth); 24h change and intraday history via
-          Pyth Benchmarks (CoinGecko fallback). Market context only — CrossBar
-          matching and clearing run on devnet inside the ER.
+          {loading && !chart ? "Loading market data… " : ""}
+          Prices (Flash Trade), 24h change (Pyth Hermes), and chart (Pyth Benchmarks)
+          refresh every 5 minutes
+          {updatedLabel ? ` · last update ${updatedLabel}` : ""}. Market context only —
+          CrossBar matching and clearing run on devnet inside the ER.
         </p>
       </CardContent>
     </Card>

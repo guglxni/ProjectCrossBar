@@ -24,7 +24,7 @@ function TickerItem({
     >
       <span className="font-medium text-foreground">{e.symbol}</span>
       <span className="font-mono tabular-nums text-muted-foreground">
-        {formatUsd(e.price)}
+        {e.price == null ? "—" : formatUsd(e.price)}
       </span>
       {e.change24h != null ? (
         <span
@@ -47,20 +47,20 @@ function TickerItem({
  * Live crypto price marquee, in the spirit of the flash.trade top bar. The
  * currently selected coin is pinned at the start (highlighted, not scrolling);
  * the remaining coins scroll. Click any scrolling coin and it takes the pinned
- * slot and drives the live chart + stats panel. Prices are live from Flash
- * Trade; 24h change from Pyth Benchmarks. Hovering pauses the scroll.
+ * slot and drives the chart + stats panel. Prices refresh every 5 minutes (Flash
+ * Trade); 24h change from Pyth Benchmarks. Hovering pauses the scroll.
  */
 export function PriceTicker() {
   const { entries, live, source, selected, setSelected, selectedEntry } =
     useMarketTickerContext();
   const metaBySymbol = new Map(TICKER_COINS.map((c) => [c.symbol, c]));
 
-  const pinned =
+  const pinned: TickerEntry =
     selectedEntry ?? {
       id: selected.id,
       symbol: selected.symbol,
       pair: selected.pair,
-      price: 0,
+      price: null,
       change24h: null,
     };
 
@@ -83,11 +83,11 @@ export function PriceTicker() {
         <span
           className={cn(
             "h-1.5 w-1.5 rounded-full",
-            live ? "animate-pulse bg-[var(--success)]" : "bg-muted-foreground",
+            live ? "bg-[var(--success)]" : "bg-muted-foreground",
           )}
         />
         <span className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
-          {source === "flash" ? "Flash · live" : "Live"}
+          {source === "flash" ? "Flash · 5m" : "5m refresh"}
         </span>
       </div>
 

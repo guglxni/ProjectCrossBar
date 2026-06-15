@@ -288,22 +288,22 @@ export const QUICKSTART_STEPS = [
 
 export const LIVE_MARKET_SOURCES = [
   {
-    data: "Live spot price",
+    data: "Spot price (5m refresh)",
     primary: "Flash Trade GET /prices",
     fallback: "CoinGecko simple/price",
     module: "flash-prices.ts",
   },
   {
     data: "24h change %",
-    primary: "Pyth Benchmarks (hourly candles)",
-    fallback: "CoinGecko usd_24h_change",
-    module: "pyth-benchmarks.ts",
+    primary: "Pyth Hermes (latest + 24h ago, batched)",
+    fallback: "DefiLlama → CoinGecko",
+    module: "pyth-hermes.ts",
   },
   {
     data: "Intraday chart + 24h high/low",
-    primary: "Pyth Benchmarks TradingView shim",
+    primary: "Pyth Benchmarks (browser-direct)",
     fallback: "CoinGecko market_chart",
-    module: "market-data.ts",
+    module: "pyth-benchmarks.ts",
   },
 ] as const;
 
@@ -323,6 +323,11 @@ export const ENV_VARS = [
   {
     name: "COINGECKO_API_KEY",
     default: "(Vercel server env only)",
-    purpose: "Optional CoinGecko demo key for fallback rate limits",
+    purpose: "Optional CoinGecko pro/demo key for /api/coingecko proxy fallback",
+  },
+  {
+    name: "COINGECKO_DEMO_API_KEY",
+    default: "(Vercel server env only)",
+    purpose: "CoinGecko demo tier key for proxy fallback",
   },
 ];

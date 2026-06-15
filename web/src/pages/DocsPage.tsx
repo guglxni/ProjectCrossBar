@@ -351,10 +351,11 @@ acceptable p* in [p_ref - half, p_ref + half]`}</DocsCodeBlock>
               Nothing here feeds run_batch or the matcher (N1).
             </p>
             <p>
-              Flash Trade supplies live marks from Pyth Lazer but has no 24h change or
-              history endpoint. Pyth Benchmarks fills that gap using the same ticker
-              strings Flash uses ({`Crypto.{SYMBOL}/USD`}). CoinGecko is a fallback when
-              Pyth is unavailable.
+              Flash Trade supplies spot marks from Pyth Lazer (5-minute refresh). For
+              24h change, Pyth Hermes batch-fetches latest and 24h-ago prices (same
+              oracle family). DefiLlama and CoinGecko are fallbacks. Intraday charts use
+              Pyth Benchmarks ({`Crypto.{SYMBOL}/USD`}) browser-direct, then CoinGecko.
+              All calls use the user&apos;s IP (CORS), not Vercel shared egress.
             </p>
             <div className="overflow-x-auto rounded-lg border border-border">
               <Table>
@@ -387,7 +388,8 @@ acceptable p* in [p_ref - half, p_ref + half]`}</DocsCodeBlock>
             <DocsList
               items={[
                 `Marquee symbols: ${LIVE_MARKET_SYMBOLS}`,
-                "Dev and production proxies: /api/pyth and /api/coingecko (Vercel rewrites to upstream)",
+                "Browser-direct Pyth Hermes + Benchmarks (CORS); CoinGecko via /api/coingecko proxy when needed",
+                "Prices, 24h change, and intraday chart refresh every 5 minutes",
                 "Click a marquee coin to switch the intraday chart (flash.trade-style UX)",
               ]}
             />

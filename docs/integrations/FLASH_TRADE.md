@@ -205,17 +205,18 @@ The `/dashboard` marquee and live market panel compose Flash + Pyth for **contex
 
 | UI surface | Primary | Fallback |
 | --- | --- | --- |
-| Marquee + headline price | Flash `GET /prices` | CoinGecko simple/price (when Flash down) |
-| 24h change % | Pyth Benchmarks (`Crypto.{SYMBOL}/USD`, hourly) | CoinGecko `usd_24h_change` |
-| Intraday area chart | Pyth Benchmarks TradingView shim | CoinGecko `market_chart` |
+| Marquee + headline price (5m) | Flash `GET /prices` | CoinGecko simple/price (when Flash down) |
+| 24h change % | Pyth Hermes (batched latest + 24h ago) | DefiLlama → CoinGecko |
+| Intraday area chart | Pyth Benchmarks (browser-direct) | CoinGecko `market_chart` |
 
-Implementation: `web/src/lib/flash-prices.ts`, `pyth-benchmarks.ts`, `market-data.ts`,
-`coingecko.ts`. Vite dev and Vercel edge proxies under `/api/pyth` and `/api/coingecko`
-centralize calls and cache responses. Optional `COINGECKO_API_KEY` on Vercel for fallback
-tier limits. See [`web/README.md`](../../web/README.md).
+Implementation: `web/src/lib/flash-prices.ts`, `pyth-hermes.ts`, `pyth-benchmarks.ts`,
+`defillama.ts`, `market-data.ts`, `coingecko.ts`. Hermes and Benchmarks are called
+browser-direct (CORS) to avoid Vercel shared-egress limits. CoinGecko uses direct fetch
+first; `/api/coingecko` serverless proxy on Vercel adds an optional API key. See
+[`web/README.md`](../../web/README.md).
 
-Flash REST does **not** expose 24h stats or candles; Pyth Benchmarks is the aligned
-choice because Flash marks already come from Pyth Lazer.
+Flash REST does **not** expose 24h stats or candles; Hermes and Benchmarks are aligned
+because Flash marks already come from Pyth Lazer.
 
 ## Honesty notes — what is *not* claimed
 
