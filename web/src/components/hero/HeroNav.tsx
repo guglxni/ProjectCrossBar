@@ -25,9 +25,9 @@ export function HeroNav() {
         className="flex items-center gap-3"
       >
         <img
-          src="/crossbar-logo-mark.png"
+          src="/logo.png"
           alt="Project CrossBar"
-          className="h-9 w-9"
+          className="h-9 w-auto object-contain"
         />
         <span className="font-display text-3xl tracking-tight text-foreground">
           CrossBar<sup className="text-xs">®</sup>

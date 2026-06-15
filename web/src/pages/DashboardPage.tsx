@@ -71,9 +71,9 @@ export function DashboardPage() {
         <SidebarHeader>
           <Link to="/" className="flex items-center gap-2.5 px-2 py-1.5">
             <img
-              src="/crossbar-logo.png"
+              src="/logo.png"
               alt="CrossBar"
-              className="h-9 w-9 object-contain"
+              className="h-9 w-auto object-contain"
             />
             <span className="font-display text-xl tracking-tight">CrossBar</span>
           </Link>

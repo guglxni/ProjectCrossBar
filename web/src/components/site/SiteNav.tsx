@@ -16,9 +16,9 @@ export function SiteNav() {
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-3">
           <img
-            src="/crossbar-logo.png"
+            src="/logo.png"
             alt="CrossBar"
-            className="h-11 w-11 object-contain"
+            className="h-11 w-auto object-contain"
           />
           <span className="font-display text-2xl leading-none tracking-tight text-foreground">
             CrossBar<sup className="align-super text-[0.5rem]">®</sup>

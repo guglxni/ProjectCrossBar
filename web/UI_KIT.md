@@ -6,11 +6,11 @@ Design system for the `web/` SPA. Light theme, workstation-dense trading UI with
 
 | Asset | Path | Use |
 | --- | --- | --- |
-| Mark (512px) | `public/crossbar-logo-mark.png` | Nav, favicon, app icon |
-| Social preview (1200×630) | `public/meta.png` | Open Graph / Twitter link cards |
+| Mark | `public/logo.png` (source: repo `logo.png`) | Nav, favicon, app icon |
+| Social preview (1200×630) | `public/meta.png` (from `docs/github-banner.png`) | Open Graph / Twitter link cards |
 | Wordmark | Instrument Serif "CrossBar®" in nav | Primary brand lockup |
 
-The mark is a geometric crossbar switch: perpendicular bars with a single purple accent stroke (#7A3FB5), black on white, flat vector.
+The mark is a hollow crossbar switch: two outlined bars with a purple cap on the right arm (#7A3FB5), black on white, flat vector. Source file: repo root `logo.png`.
 
 ## Typography
 
@@ -86,5 +86,5 @@ Charts use **Recharts** directly in dashboard panels (not shadcn chart wrapper).
 Add to `index.html`:
 
 ```html
-<link rel="icon" href="/crossbar-logo-mark.png" />
+<link rel="icon" href="/logo.png" />
 ```

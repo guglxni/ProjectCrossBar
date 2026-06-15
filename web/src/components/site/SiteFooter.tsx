@@ -16,9 +16,9 @@ export function SiteFooter() {
         <div>
           <Link to="/" className="flex items-center gap-3">
             <img
-              src="/crossbar-logo.png"
+              src="/logo.png"
               alt="CrossBar"
-              className="h-11 w-11 object-contain"
+              className="h-11 w-auto object-contain"
             />
             <span className="font-display text-2xl tracking-tight text-foreground">
               CrossBar
