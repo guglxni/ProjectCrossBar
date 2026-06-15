@@ -176,7 +176,9 @@ export async function getPythChart(
   const from = to - 86_400;
   const qs = new URLSearchParams({
     symbol: pythTicker(symbol),
-    resolution: "60",
+    // 5-minute candles → ~288 points across 24h, so the chart is spaced at 5-min
+    // intervals (matching the 5-min refresh cadence), not hourly.
+    resolution: "5",
     from: String(from),
     to: String(to),
   });
