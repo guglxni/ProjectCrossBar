@@ -7,6 +7,7 @@ Design system for the `web/` SPA. Light theme, workstation-dense trading UI with
 | Asset | Path | Use |
 | --- | --- | --- |
 | Mark (512px) | `public/crossbar-logo-mark.png` | Nav, favicon, app icon |
+| Social preview (1200×630) | `public/meta.png` | Open Graph / Twitter link cards |
 | Wordmark | Instrument Serif "CrossBar®" in nav | Primary brand lockup |
 
 The mark is a geometric crossbar switch: perpendicular bars with a single purple accent stroke (#7A3FB5), black on white, flat vector.
