@@ -5,12 +5,15 @@
   <img src="docs/github-banner.png" alt="Project CrossBar — Beyond the slot, one price for every window" width="100%">
 </picture>
 
-> A frequent batch auction (FBA) DEX whose order matching and uniform-price clearing run **inside a MagicBlock Ephemeral Rollup**, then settle atomically to Solana L1.
+> A frequent batch auction (FBA) DEX whose order matching and uniform-price clearing run **inside a MagicBlock Ephemeral Rollup**, then settle atomically to Solana L1. **Composed with [Flash Trade V2](https://flash.trade/)** perps on the same rollup: clear spot at one uniform p*, hedge delta on Flash.
+
+> **Flash Trade integration.** [Flash Trade V2](https://flash.trade/) runs pool-to-peer perpetuals on a MagicBlock Ephemeral Rollup (same substrate as CrossBar: ~30–50 ms confirms, Pyth Lazer oracle). CrossBar is the **spot batch venue**; Flash is the **perp hedge leg**. Tiers 0–2 are implemented (`clients/flash/`, dashboard live marks, `tests/hedge-demo.ts`). MagicBlock hackathons include a [**Flash Boost**](https://hackathon.magicblock.app/) (50% bonus on eligible prizes when Flash is integrated). Full design: [`docs/integrations/FLASH_TRADE.md`](docs/integrations/FLASH_TRADE.md).
 
 [![clearing tests](https://img.shields.io/badge/clearing%20tests-49%20passing-2ea043)](clearing/)
 [![certified parity](https://img.shields.io/badge/certified%20parity-4006%2F4006-2ea043)](tests/parity/)
 [![devnet](https://img.shields.io/badge/devnet-deployed%20%26%20live-7a3fb5)](#verification)
 [![live demo](https://img.shields.io/badge/demo-projectcrossbar.vercel.app-000000)](https://projectcrossbar.vercel.app)
+[![Flash Trade](https://img.shields.io/badge/Flash%20Trade-integrated-7a3fb5)](docs/integrations/FLASH_TRADE.md)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 *Research-backed clearing:* uniform-price batch auctions with Nasdaq call-auction pricing ([arXiv:1407.4512](https://arxiv.org/abs/1407.4512)), VRF-randomized window close ([arXiv:2405.09764](https://arxiv.org/abs/2405.09764)), and CFMM-augmented liquidity ([arXiv:2210.04929](https://arxiv.org/abs/2210.04929)) — matcher checked against a verified Coq oracle ([arXiv:2104.08437](https://arxiv.org/abs/2104.08437)). Citations and proofs in [`MATH.md`](MATH.md).
@@ -146,9 +149,9 @@ solana program show CG4brtfmRvvHLGEfLazSmrTWeUJsDvyKYfosx2Abbzbd --url devnet
 
 ## Live demo
 
-**Web app:** [https://projectcrossbar.vercel.app](https://projectcrossbar.vercel.app)
+**Web app:** [https://projectcrossbar.vercel.app](https://projectcrossbar.vercel.app) · **Docs:** [/docs](https://projectcrossbar.vercel.app/docs)
 
-Cinematic landing page + devnet trading dashboard (dual RPC, Flash live prices + Pyth Benchmarks 24h context, Kora gasless relay on [Heroku](https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com)). Connect a devnet wallet and open `/dashboard`.
+Cinematic landing (Flash Trade integration section), devnet trading dashboard with **Flash live marks** + Pyth 24h context, **Flash Trade panel** (`/dashboard#flash`), Kora gasless relay on [Heroku](https://crossbar-kora-devnet-b94b9586c6b7.herokuapp.com). Connect a devnet wallet and open `/dashboard`.
 
 ---
 
@@ -225,19 +228,16 @@ CrossBar layers several peer-reviewed results onto the base FBA, each implemente
 
 ## Integrations
 
-CrossBar runs inside a MagicBlock Ephemeral Rollup, which makes two adjacent protocols
-natural to compose with. Both are source-grounded designs in
-[`docs/integrations/`](docs/integrations/) with working code:
+CrossBar runs inside a MagicBlock Ephemeral Rollup. The headline composition is **CrossBar (spot batch auction) + [Flash Trade V2](https://flash.trade/) (perps)** on the same ER: shared delegation lifecycle, shared Pyth Lazer reference, spot clear then perp hedge in one session. MagicBlock hackathons award a [**Flash Boost**](https://hackathon.magicblock.app/) (integrate Flash Trade → 50% bonus on eligible prize payouts).
 
-- **[Flash Trade V2](docs/integrations/FLASH_TRADE.md)** — a perp DEX that also runs on
-  a MagicBlock ER. Typed REST client and WebSocket streaming in [`clients/flash/`](clients/flash/),
-  plus a spot/perp hedge demo (`tests/hedge-demo.ts`). Live co-execution requires mainnet on
-  both sides; devnet uses API reads with mocked execution.
-- **[MagicBlock Private Payments / PER](docs/integrations/PRIVATE_PAYMENTS.md)** — upgrade
-  CrossBar's ER to a *Private* ER so resting order sizes and escrow amounts live in a TEE.
-  Batching hides *when/in-what-order* you trade; PER hides *how much*. Implemented via
-  `make_private` / `make_open_orders_private` ([`programs/crossbar/src/permission.rs`](programs/crossbar/src/permission.rs)),
-  demonstrated by [`tests/private-demo.ts`](tests/private-demo.ts).
+| Integration | Role | Status |
+| --- | --- | --- |
+| **[Flash Trade V2](docs/integrations/FLASH_TRADE.md)** | Perp venue + live dashboard marks; spot/perp hedge demo | **Tiers 0–2 live** (`clients/flash/`, `tests/hedge-demo.ts`); Tier 3 roadmap |
+| **[MagicBlock ER](https://docs.magicblock.gg/)** | Sub-slot clearing + L1 settlement | Devnet verified |
+| **[Kora](kora/)** | Gasless order submit | Heroku relayer live |
+| **[Private Payments / PER](docs/integrations/PRIVATE_PAYMENTS.md)** | Confidential resting sizes in a TEE ER | Base permissions live; TEE roadmap |
+
+Flash REST (`GET /prices`, `GET /pool-data`) powers the dashboard marquee and off-chain oracle band sanity checks. Nothing from Flash runs inside `run_batch` (N1). See [`docs/integrations/`](docs/integrations/) and the in-app docs at [projectcrossbar.vercel.app/docs#flash-trade](https://projectcrossbar.vercel.app/docs#flash-trade).
 
 Settlement follows the standard MagicBlock two-step pattern: clear inside the ER, then
 `undelegate_open_orders` + `settle` on L1 (automated in [`tests/crank-demo.ts`](tests/crank-demo.ts)).

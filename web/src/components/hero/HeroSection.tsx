@@ -50,10 +50,17 @@ export function HeroSection({ poll }: HeroSectionProps) {
           <em className="text-muted-foreground not-italic">every window</em>.
         </h1>
         <p className="animate-fade-rise-delay mt-8 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          A frequent batch auction DEX on Solana. Order matching and
-          uniform-price clearing run inside a MagicBlock Ephemeral Rollup, then
-          settle atomically to L1. No intra-batch time priority. Competition
-          moves to price.
+          A frequent batch auction DEX on Solana, composed with{" "}
+          <a
+            href="https://flash.trade/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Flash Trade
+          </a>{" "}
+          perps on the same MagicBlock Ephemeral Rollup. Uniform-price clearing
+          in the ER, atomic settlement to L1. No intra-batch time priority.
         </p>
         <div className="animate-fade-rise-delay-2 mt-12 flex flex-wrap items-center justify-center gap-3">
           <Button

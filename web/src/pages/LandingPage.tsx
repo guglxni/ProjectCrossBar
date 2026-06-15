@@ -2,6 +2,7 @@ import { useMarketContext } from "@/context/MarketContext";
 import { useCrossbarProgram } from "@/hooks/useCrossbarProgram";
 import { useMarketPolling } from "@/hooks/useMarketPolling";
 import { HeroSection } from "@/components/hero/HeroSection";
+import { FlashTradeSection } from "@/components/landing/FlashTradeSection";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FeatureGrid } from "@/components/landing/FeatureGrid";
 import { InvariantsSection } from "@/components/landing/InvariantsSection";
@@ -24,6 +25,7 @@ export function LandingPage() {
     <>
       <HeroSection poll={poll} />
       <HowItWorks />
+      <FlashTradeSection />
       <FeatureGrid />
       <InvariantsSection />
       <FaqSection />

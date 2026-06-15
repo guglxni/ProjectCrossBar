@@ -30,6 +30,8 @@ import {
   DIAGRAMS,
   DOCS_SECTIONS,
   ENV_VARS,
+  FLASH_TRADE_LINKS,
+  FLASH_TRADE_TIERS,
   INSTRUCTIONS,
   LIVE_MARKET_SOURCES,
   LIVE_MARKET_SYMBOLS,
@@ -97,8 +99,8 @@ export function DocsPage() {
           Everything behind the cross.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-          Protocol overview, architecture, on-chain instruction map, and devnet
-          deployment constants.
+          Protocol overview, Flash Trade integration, architecture, on-chain
+          instruction map, and devnet deployment constants.
         </p>
       </div>
 
@@ -128,6 +130,7 @@ export function DocsPage() {
             <DocsList
               items={[
                 "Sub-slot batched matching with protocol-controlled sequencing in the ER",
+                "Flash Trade V2 integration: spot clear + perp hedge on the same MagicBlock rollup",
                 "Canonical call-auction price rule (max volume, min imbalance, pressure, oracle ref)",
                 "Integer fixed-point math only (PRICE_SCALE = 1,000,000)",
                 "Certified parity against a verified reference matcher (4006/4006 batches)",
@@ -143,6 +146,104 @@ export function DocsPage() {
               </Button>
               <Button asChild variant="outline" size="sm" className="rounded-full">
                 <Link to="/integrations">Integrations</Link>
+              </Button>
+            </div>
+          </DocsSection>
+
+          <DocsSection id="flash-trade" title="Flash Trade integration">
+            <p className="text-foreground">
+              CrossBar is a spot batch auction.{" "}
+              <a
+                href="https://flash.trade/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[var(--accent)] hover:underline"
+              >
+                Flash Trade V2
+              </a>{" "}
+              is a pool-to-peer perpetual futures DEX that also runs inside a
+              MagicBlock Ephemeral Rollup. Both share delegation lifecycle, ~30–50
+              ms ER confirms, and Pyth Lazer marks. The integration thesis: clear
+              spot at one uniform p* on CrossBar, hedge the delta on Flash in the
+              same session.
+            </p>
+            <p>
+              MagicBlock hackathons award a{" "}
+              <span className="font-medium text-foreground">Flash Boost</span>:
+              projects that integrate Flash Trade can receive a 50% bonus on
+              eligible prize payouts (
+              <a
+                href="https://hackathon.magicblock.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--accent)] hover:underline"
+              >
+                hackathon.magicblock.app
+              </a>
+              ). CrossBar ships Tiers 0–2 today; Tier 3 co-located execution is
+              roadmap.
+            </p>
+            <DocsDiagram
+              src="/diagrams/flash-integration.png"
+              alt="Flash Trade and CrossBar on one rollup"
+              caption="Two venues, one Ephemeral Rollup: uniform spot clearing and perp hedging."
+            />
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Surface</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Summary</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {FLASH_TRADE_TIERS.map((row) => (
+                    <TableRow key={row.tier}>
+                      <TableCell className="font-mono text-xs">{row.tier}</TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        {row.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={row.status === "Live" ? "default" : "outline"}
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {row.summary}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <DocsList
+              items={[
+                "Nothing in Flash integration runs inside run_batch (N1 determinism preserved)",
+                "Flash REST has live marks only; 24h change and charts come from Pyth Hermes/Benchmarks",
+                "Devnet CrossBar + mainnet Flash: hedge leg mocked unless FLASH_LIVE=1 preview",
+              ]}
+            />
+            <div className="flex flex-wrap gap-3 pt-2">
+              {FLASH_TRADE_LINKS.map((link) => (
+                <Button
+                  key={link.href}
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  <a href={link.href} target="_blank" rel="noopener noreferrer">
+                    {link.label}
+                    <ExternalLink className="ml-1 h-3.5 w-3.5" />
+                  </a>
+                </Button>
+              ))}
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <Link to="/dashboard#flash">Open Flash panel</Link>
               </Button>
             </div>
           </DocsSection>

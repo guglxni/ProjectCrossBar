@@ -1,5 +1,7 @@
 # Integration: Flash Trade (perpetuals on the same rollup)
 
+> **Why this matters for hackathons.** MagicBlock hackathons ([hackathon.magicblock.app](https://hackathon.magicblock.app/)) include a **Flash Boost**: integrate [Flash Trade](https://flash.trade/) and eligible prize payouts increase by **50%**. CrossBar is built as the spot batch leg of that stack, not a standalone spot demo.
+
 > **Status: Tiers 0–2 IMPLEMENTED; Tier 3 roadmap.** A typed Flash REST client
 > (`clients/flash/client.ts`), a read-only price/liquidity reference keeper
 > (`clients/flash-ref.ts`, verified against the **live mainnet** Flash API), and a

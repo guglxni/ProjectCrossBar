@@ -1,10 +1,27 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu, Fuel, LineChart, Network } from "lucide-react";
+import { ArrowRight, Cpu, Fuel, LineChart, Network, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const INTEGRATIONS = [
+  {
+    icon: Zap,
+    name: "Flash Trade V2",
+    tag: "Spot + perp",
+    featured: true,
+    body: "Flash runs perpetual futures on the same MagicBlock Ephemeral Rollup as CrossBar (~30–50 ms confirms, Pyth Lazer oracle). CrossBar clears spot at one uniform p*; Flash hedges the delta. Tiers 0–2 are live: REST client, dashboard market context, and tests/hedge-demo.ts. MagicBlock hackathons add a Flash Boost (50% prize bonus when Flash is integrated).",
+    points: [
+      "Same ER substrate, delegation lifecycle, and oracle family as CrossBar",
+      "Live dashboard: Flash GET /prices marquee + Pyth 24h context",
+      "clients/flash/ typed API + spot/perp hedge demo (devnet mock leg)",
+    ],
+    href: "https://flash.trade/",
+    linkLabel: "flash.trade",
+    secondaryHref: "/docs#flash-trade",
+    secondaryLabel: "Integration doc",
+    secondaryInternal: true,
+  },
   {
     icon: Cpu,
     name: "MagicBlock Ephemeral Rollup",
@@ -33,16 +50,16 @@ const INTEGRATIONS = [
   },
   {
     icon: LineChart,
-    name: "Flash Trade price feed",
+    name: "Pyth oracle stack",
     tag: "Market data",
-    body: "CrossBar reads spot marks from Flash Trade (Pyth Lazer, 5-minute refresh). 24h change uses Pyth Hermes (batched); charts use Pyth Benchmarks browser-direct. DefiLlama and CoinGecko are fallbacks.",
+    body: "CrossBar gates p* with Pyth Lazer on-chain. The dashboard reads Flash Trade marks (same oracle family) plus Pyth Hermes 24h change and Pyth Benchmarks charts. DefiLlama and CoinGecko are fallbacks.",
     points: [
-      "Spot prices: Flash GET /prices (SOL, ETH, BTC, and majors)",
-      "24h %: Pyth Hermes → DefiLlama → CoinGecko",
-      "Read-only market context — never feeds run_batch",
+      "On-chain band gate: reject p* outside [p_ref ± δ]",
+      "Flash /prices for live spot context (never feeds run_batch)",
+      "Hermes + Benchmarks browser-direct (no Vercel egress limits)",
     ],
-    href: "https://flash.trade/",
-    linkLabel: "Flash Trade",
+    href: "https://docs.pyth.network/",
+    linkLabel: "Pyth docs",
   },
   {
     icon: Network,
@@ -65,22 +82,37 @@ export function IntegrationsPage() {
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
       <div className="mx-auto max-w-3xl text-center">
         <Badge variant="outline" className="mb-5">
-          <Network className="mr-1 h-3.5 w-3.5 text-[var(--accent)]" />
-          Built on Solana's best
+          <Zap className="mr-1 h-3.5 w-3.5 text-[var(--accent)]" />
+          Flash Trade + MagicBlock ER
         </Badge>
         <h1 className="font-display text-4xl tracking-[-1px] text-foreground md:text-6xl">
-          The stack behind every clear.
+          Spot batch auction, perp hedge, one rollup.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-          CrossBar composes a focused set of best-in-class building blocks — a
-          rollup for speed, a relayer for onboarding, live market data, and a
-          verified matcher for correctness.
+          CrossBar composes with{" "}
+          <a
+            href="https://flash.trade/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Flash Trade
+          </a>{" "}
+          on the same MagicBlock stack: fair spot clearing, live perp marks, gasless
+          onboarding, and a matcher proved against a verified oracle.
         </p>
       </div>
 
       <div className="mt-14 grid gap-5 md:grid-cols-2">
         {INTEGRATIONS.map((it) => (
-          <Card key={it.name} className="flex flex-col">
+          <Card
+            key={it.name}
+            className={
+              "featured" in it && it.featured
+                ? "border-[var(--accent)]/40 bg-[var(--accent)]/5 md:col-span-2"
+                : "flex flex-col"
+            }
+          >
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -89,7 +121,10 @@ export function IntegrationsPage() {
                   </span>
                   <CardTitle className="text-base">{it.name}</CardTitle>
                 </div>
-                <Badge variant="secondary" className="shrink-0">
+                <Badge
+                  variant={"featured" in it && it.featured ? "default" : "secondary"}
+                  className="shrink-0"
+                >
                   {it.tag}
                 </Badge>
               </div>
@@ -109,7 +144,7 @@ export function IntegrationsPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-5 pt-1">
+              <div className="mt-5 flex flex-wrap gap-4 pt-1">
                 {it.internal ? (
                   <Button
                     asChild
@@ -132,6 +167,26 @@ export function IntegrationsPage() {
                     <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </a>
                 )}
+                {"secondaryHref" in it && it.secondaryHref && (
+                  it.secondaryInternal ? (
+                    <Button
+                      asChild
+                      variant="link"
+                      className="h-auto p-0 text-muted-foreground"
+                    >
+                      <Link to={it.secondaryHref}>{it.secondaryLabel}</Link>
+                    </Button>
+                  ) : (
+                    <a
+                      href={it.secondaryHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-muted-foreground hover:underline"
+                    >
+                      {it.secondaryLabel}
+                    </a>
+                  )
+                )}
               </div>
             </CardContent>
           </Card>
@@ -142,14 +197,14 @@ export function IntegrationsPage() {
         <CardContent className="flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-medium text-foreground">
-              Everything wired, live on devnet
+              Flash panel + full devnet lifecycle
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Connect a wallet and run a full window end to end.
+              Connect a wallet, read Flash live marks, and run a window end to end.
             </p>
           </div>
           <Button asChild className="group shrink-0 rounded-full">
-            <Link to="/dashboard">
+            <Link to="/dashboard#flash">
               Open dashboard
               <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>

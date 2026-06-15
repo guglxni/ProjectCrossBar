@@ -4,15 +4,16 @@ const LINKS = [
   { label: "Markets", href: "#dashboard" },
   { label: "Dashboard", href: "#dashboard" },
   { label: "Parity", href: "#verification" },
-  { label: "Integrations", href: "#flash" },
+  { label: "Integrations", href: "/integrations" },
+  { label: "Flash Trade", href: "#flash" },
   { label: "Docs", href: "/docs" },
 ];
 
-function scrollTo(href: string) {
+function navigate(href: string) {
   if (href.startsWith("#")) {
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   } else {
-    window.open(href, "_blank", "noopener");
+    window.location.assign(href);
   }
 }
 
@@ -38,7 +39,7 @@ export function HeroNav() {
           <button
             key={link.label}
             type="button"
-            onClick={() => scrollTo(link.href)}
+            onClick={() => navigate(link.href)}
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {link.label}
@@ -49,7 +50,7 @@ export function HeroNav() {
         <WalletMultiButton className="!rounded-full !bg-black !text-sm !text-white hover:!scale-[1.03]" />
         <button
           type="button"
-          onClick={() => scrollTo("#dashboard")}
+          onClick={() => navigate("#dashboard")}
           className="hidden rounded-full bg-primary px-6 py-2.5 text-sm text-primary-foreground transition-transform hover:scale-[1.03] sm:inline-block"
         >
           Open Dashboard

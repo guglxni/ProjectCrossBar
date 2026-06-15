@@ -14,6 +14,7 @@ import {
 
 export type DocsSectionId =
   | "overview"
+  | "flash-trade"
   | "architecture"
   | "lifecycle"
   | "clearing"
@@ -26,6 +27,7 @@ export type DocsSectionId =
 
 export const DOCS_SECTIONS: { id: DocsSectionId; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "flash-trade", label: "Flash Trade" },
   { id: "architecture", label: "Architecture" },
   { id: "lifecycle", label: "ER lifecycle" },
   { id: "clearing", label: "Clearing" },
@@ -238,7 +240,55 @@ export const DIAGRAMS = [
     src: "/diagrams/account-model.png",
     caption: "PDA layout and which instructions touch L1 vs the ER.",
   },
+  {
+    id: "flash-integration",
+    label: "Flash Trade composition",
+    src: "/diagrams/flash-integration.png",
+    caption: "Spot batch clearing on CrossBar and perp hedging on Flash Trade, same MagicBlock ER.",
+  },
 ];
+
+export const FLASH_TRADE_TIERS = [
+  {
+    tier: "0",
+    name: "Price + liquidity reference",
+    status: "Live",
+    summary:
+      "clients/flash-ref.ts reads Flash GET /prices and GET /pool-data as an off-chain sanity signal for the oracle band (never inside run_batch).",
+  },
+  {
+    tier: "1",
+    name: "Dashboard market context",
+    status: "Live",
+    summary:
+      "Marquee and live market panel use Flash marks (Pyth Lazer) plus Pyth Hermes/Benchmarks for 24h stats and charts.",
+  },
+  {
+    tier: "2",
+    name: "Spot / perp hedge demo",
+    status: "Live",
+    summary:
+      "tests/hedge-demo.ts previews clearing on CrossBar and hedging delta on Flash in one ER session (mocked perp leg on devnet).",
+  },
+  {
+    tier: "3",
+    name: "Co-located agent flow",
+    status: "Roadmap",
+    summary:
+      "Trader or agent clears spot at p*, opens the Flash perp hedge, same delegation lifecycle, same oracle family.",
+  },
+] as const;
+
+export const FLASH_TRADE_LINKS = [
+  { label: "flash.trade", href: "https://flash.trade/" },
+  { label: "Flash REST API", href: "https://flashapi.trade" },
+  { label: "examples-v2 repo", href: "https://github.com/flash-trade/examples-v2" },
+  {
+    label: "Full integration doc (GitHub)",
+    href: "https://github.com/guglxni/ProjectCrossBar/blob/main/docs/integrations/FLASH_TRADE.md",
+  },
+  { label: "MagicBlock hackathons", href: "https://hackathon.magicblock.app/" },
+] as const;
 
 export const DEVNET_CONSTANTS = [
   { key: "Program ID", value: PROGRAM_ID.toBase58() },
